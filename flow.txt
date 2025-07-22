@@ -1,0 +1,10 @@
+Project setup & folder structure
+Auth module (login, register, guards)
+User module (dashboard, send parcel, tracking, notification center)
+Admin module (dashboard, manage parcels, assign courier)
+Courier module (dashboard, update location/status)
+Shared module (dynamic message, pipes, directives)
+State management (ngRx) and dummy data services
+Google Maps integration
+Search, pagination, and UI polish
+Why Add Geocoding?

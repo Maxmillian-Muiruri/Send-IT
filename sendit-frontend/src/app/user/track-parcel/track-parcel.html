@@ -1,0 +1,141 @@
+<app-navbar></app-navbar>
+
+<!-- Main Content -->
+<main class="main-content">
+  <!-- Track Section -->
+  <section class="track-section">
+    <h1 class="track-title">Track Your Parcel</h1>
+    <p class="track-subtitle">
+      Enter your parcel ID to get real-time tracking information
+    </p>
+    <form [formGroup]="trackForm" (ngSubmit)="onSubmit()" class="track-form">
+      <input
+        type="text"
+        class="track-input"
+        formControlName="trackingId"
+        placeholder="PKG-2025-001234"
+      />
+      <button
+        type="submit"
+        class="track-btn"
+        [disabled]="loading || trackForm.invalid"
+      >
+        <span *ngIf="!loading">🔍 Track</span>
+        <span *ngIf="loading">⏳</span>
+      </button>
+    </form>
+    <div *ngIf="notFound" style="color: #b71c1c; margin-top: 1rem">
+      Parcel not found. Please check your tracking ID.
+    </div>
+  </section>
+
+  <!-- Parcel Information -->
+  <section class="parcel-info" *ngIf="searched">
+    <div class="parcel-header">
+      <h2>Parcel Information</h2>
+      <div class="status-badge">{{ parcel.status }}</div>
+    </div>
+    <div class="parcel-details">
+      <div class="detail-section">
+        <h3>👤 Sender Details</h3>
+        <div class="detail-item">
+          <div class="detail-label">Name</div>
+          <div class="detail-value">{{ parcel.sender.name }}</div>
+        </div>
+        <div class="detail-item">
+          <div class="detail-label">Address</div>
+          <div class="detail-value">{{ parcel.sender.address }}</div>
+        </div>
+        <div class="detail-item">
+          <div class="detail-label">Phone</div>
+          <div class="detail-value">{{ parcel.sender.phone }}</div>
+        </div>
+      </div>
+      <div class="detail-section">
+        <h3>📍 Receiver Details</h3>
+        <div class="detail-item">
+          <div class="detail-label">Name</div>
+          <div class="detail-value">{{ parcel.receiver.name }}</div>
+        </div>
+        <div class="detail-item">
+          <div class="detail-label">Address</div>
+          <div class="detail-value">{{ parcel.receiver.address }}</div>
+        </div>
+        <div class="detail-item">
+          <div class="detail-label">Phone</div>
+          <div class="detail-value">{{ parcel.receiver.phone }}</div>
+        </div>
+      </div>
+    </div>
+    <div class="parcel-meta">
+      <div class="meta-item">
+        <div class="detail-label">Parcel ID</div>
+        <div class="detail-value">{{ parcel.id }}</div>
+      </div>
+      <div class="meta-item">
+        <div class="detail-label">Weight</div>
+        <div class="detail-value">{{ parcel.weight }}</div>
+      </div>
+      <div class="meta-item">
+        <div class="detail-label">Service Type</div>
+        <div class="detail-value">{{ parcel.serviceType }}</div>
+      </div>
+      <div class="meta-item">
+        <div class="detail-label">Est. Delivery</div>
+        <div class="detail-value">{{ parcel.estDelivery }}</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Tracking Progress -->
+  <section class="tracking-progress" *ngIf="searched">
+    <h2 class="progress-header">Tracking Progress</h2>
+    <div class="progress-timeline">
+      <div class="progress-line"></div>
+      <div class="progress-step" *ngFor="let step of parcel.progress">
+        <div class="step-icon" [ngClass]="step.status">{{ step.icon }}</div>
+        <div class="step-label">{{ step.label }}</div>
+        <div class="step-time">{{ step.time }}</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Bottom Section -->
+  <div class="bottom-section" *ngIf="searched">
+    <!-- Current Location -->
+    <section class="location-section">
+      <h2 class="section-title">Current Location</h2>
+      <div class="location-map">
+        <div class="map-pin">📍</div>
+        <div class="location-text">{{ parcel.currentLocation }}</div>
+        <div class="location-update">
+          Last updated: {{ parcel.lastUpdated }}
+        </div>
+        <app-map *ngIf="searched" [pickupCoords]="currentCoords"></app-map>
+      </div>
+    </section>
+    <!-- Tracking History -->
+    <section class="history-section">
+      <h2 class="section-title">Tracking History</h2>
+      <div class="history-item" *ngFor="let h of parcel.history">
+        <div class="history-dot"></div>
+        <div class="history-content">
+          <div class="history-title">{{ h.title }}</div>
+          <div class="history-location">{{ h.location }}</div>
+          <div class="history-time">{{ h.time }}</div>
+        </div>
+      </div>
+    </section>
+  </div>
+</main>
+
+<!-- Footer -->
+<footer class="footer">
+  <div class="footer-content">
+    <div class="footer-logo">
+      <div class="logo-icon">📦</div>
+      <span>SendIT</span>
+    </div>
+    <div class="footer-text">© 2025 SendIT. All rights reserved.</div>
+  </div>
+</footer>

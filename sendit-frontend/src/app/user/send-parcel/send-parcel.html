@@ -1,0 +1,204 @@
+<!-- Header -->
+<header class="header">
+  <div class="header-content">
+    <div class="logo">
+      <img
+        src="https://images.emojiterra.com/google/noto-emoji/unicode-16.0/color/share/1f69a.jpg"
+        alt="SendIT Icon"
+        style="width: 28px; height: 28px; margin-right: 0.5rem"
+      />
+      SendIT
+    </div>
+    <div class="nav-container">
+      <nav>
+        <ul class="nav-menu">
+          <li>
+            <a href="/">Home</a>
+          </li>
+          <li>
+            <a routerLink="/user/dashboard" routerLinkActive="active"
+              >Dashboard</a
+            >
+          </li>
+          <li>
+            <a routerLink="/user/track" routerLinkActive="active">Track</a>
+          </li>
+          <li>
+            <a routerLink="/user/history" routerLinkActive="active">History</a>
+          </li>
+          <li>
+            <a routerLink="/user/profile" routerLinkActive="active">Profile</a>
+          </li>
+        </ul>
+      </nav>
+    </div>
+    <div class="user-actions">
+      <button
+        class="notification-btn"
+        title="Notifications"
+        (click)="showNotification()"
+      ></button>
+      <div
+        class="profile-avatar"
+        title="Profile"
+        (click)="showProfileMenu()"
+      ></div>
+    </div>
+  </div>
+</header>
+
+<!-- Main Content -->
+<main class="main-content">
+  <div class="page-header">
+    <h1 class="page-title">Send Parcel</h1>
+    <p class="page-subtitle">Fill in the details below to send your parcel</p>
+    <hr />
+  </div>
+
+  <div class="form-container">
+    <!-- Parcel Details Section -->
+    <div class="form-section">
+      <h2 class="section-title">Parcel Details</h2>
+      <div *ngIf="successMessage" class="message-box success">
+        {{ successMessage }}
+      </div>
+      <div *ngIf="errorMessage" class="message-box error">
+        {{ errorMessage }}
+      </div>
+      <form [formGroup]="parcelForm" (ngSubmit)="onSubmit()" id="parcelForm">
+        <div class="form-group">
+          <label for="receiverEmail" class="form-label">Receiver Email</label>
+          <input
+            type="email"
+            id="receiverEmail"
+            class="form-input"
+            placeholder="receiver@example.com"
+            formControlName="receiverEmail"
+          />
+        </div>
+        <div class="form-group">
+          <label for="weight" class="form-label">Weight (kg)</label>
+          <input
+            type="number"
+            id="weight"
+            class="form-input"
+            placeholder="0.5"
+            step="0.1"
+            min="0.1"
+            formControlName="weight"
+            (input)="updateCost()"
+          />
+        </div>
+        <div class="form-group">
+          <label for="pickupLocation" class="form-label">Pickup Location</label>
+          <input
+            type="text"
+            id="pickupLocation"
+            class="form-input"
+            placeholder="Enter pickup address"
+            formControlName="pickupLocation"
+          />
+        </div>
+        <div class="form-group">
+          <label for="destination" class="form-label">Destination</label>
+          <input
+            type="text"
+            id="destination"
+            class="form-input"
+            placeholder="Enter destination address"
+            formControlName="destination"
+          />
+        </div>
+        <button
+          type="submit"
+          class="calculate-btn"
+          [disabled]="loading || parcelForm.invalid"
+        >
+          Calculate Cost & Send
+        </button>
+      </form>
+    </div>
+
+    <!-- Route Preview Section -->
+    <div class="form-section">
+      <h2 class="section-title">Route Preview</h2>
+      <app-map
+        [pickupCoords]="pickupCoords"
+        [destinationCoords]="destinationCoords"
+      ></app-map>
+      <div class="route-points">
+        <div class="route-point">Pickup Location</div>
+        <div class="route-point">Destination</div>
+      </div>
+      <div class="delivery-info">
+        <h3 class="section-title">Delivery Information</h3>
+        <div class="info-item delivery-time">
+          Estimated delivery: 2-3 business days
+        </div>
+        <div class="info-item service-type">Standard delivery service</div>
+        <div class="info-item insurance">Insured up to $100</div>
+        <div class="info-item">Distance: {{ distanceKm.toFixed(2) }} km</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Cost Section -->
+  <div class="cost-section">
+    <h2 class="section-title">Calculate Cost & Send</h2>
+    <table class="cost-table">
+      <tr>
+        <td>Base rate:</td>
+        <td class="cost-value">${{ baseRate.toFixed(2) }}</td>
+      </tr>
+      <tr>
+        <td>Weight charge:</td>
+        <td class="cost-value">${{ weightCharge.toFixed(2) }}</td>
+      </tr>
+      <tr>
+        <td>Distance charge:</td>
+        <td class="cost-value">${{ distanceCharge.toFixed(2) }}</td>
+      </tr>
+      <tr class="total">
+        <td>Total:</td>
+        <td class="cost-value">${{ totalCost.toFixed(2) }}</td>
+      </tr>
+    </table>
+  </div>
+</main>
+
+<!-- Footer -->
+<footer class="footer">
+  <div class="footer-content">
+    <div class="footer-logo">SendIT</div>
+    <p class="footer-description">
+      Fast, reliable parcel delivery service for all your shipping needs.
+    </p>
+    <div class="footer-grid">
+      <div class="footer-column">
+        <h3>Services</h3>
+        <ul>
+          <li><a href="#">Send Parcel</a></li>
+          <li><a href="#">Track Package</a></li>
+          <li><a href="#">Bulk Shipping</a></li>
+        </ul>
+      </div>
+      <div class="footer-column">
+        <h3>Support</h3>
+        <ul>
+          <li><a href="#">Help Center</a></li>
+          <li><a href="#">Contact Us</a></li>
+          <li><a href="#">Shipping Guide</a></li>
+        </ul>
+      </div>
+      <div class="footer-column">
+        <h3>Company</h3>
+        <ul>
+          <li><a href="#">About Us</a></li>
+          <li><a href="#">Careers</a></li>
+          <li><a href="#">Privacy Policy</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="copyright">© 2025 SendIT. All rights reserved.</div>
+  </div>
+</footer>

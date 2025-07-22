@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SendIT Admin Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: #f5f5f5;
+            color: #333;
+        }
+
+        .container {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 200px;
+            background-color: #fff;
+            border-right: 1px solid #e0e0e0;
+            padding: 20px 0;
+        }
+
+        .sidebar-header {
+            padding: 0 20px 30px;
+            border-bottom: 1px solid #e0e0e0;
+            margin-bottom: 20px;
+        }
+
+        .sidebar-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .sidebar-header h2 {
+            font-size: 16px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .sidebar-logo {
+            width: 20px;
+            height: 20px;
+            background-color: #333;
+            mask: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M3 6h13l3 3v6h-2.5a2.5 2.5 0 0 1-5 0h-7a2.5 2.5 0 0 1-5 0H2V6h1zm16 8.5a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3zM5 14.5a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3zM17 8H3v1h14V8z"/></svg>') center/contain no-repeat;
+            -webkit-mask: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M3 6h13l3 3v6h-2.5a2.5 2.5 0 0 1-5 0h-7a2.5 2.5 0 0 1-5 0H2V6h1zm16 8.5a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3zM5 14.5a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3zM17 8H3v1h14V8z"/></svg>') center/contain no-repeat;
+        }
+
+        .sidebar-menu {
+            list-style: none;
+        }
+
+        .sidebar-menu li {
+            margin-bottom: 5px;
+        }
+
+        .sidebar-menu a {
+            display: flex;
+            align-items: center;
+            padding: 12px 20px;
+            text-decoration: none;
+            color: #666;
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+
+        .sidebar-menu a:hover,
+        .sidebar-menu a.active {
+            background-color: #f0f0f0;
+            color: #333;
+        }
+
+        .sidebar-menu .icon {
+            width: 16px;
+            height: 16px;
+            margin-right: 12px;
+            background-size: contain;
+        }
+
+        .icon-dashboard { background-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>'); }
+        .icon-parcels { background-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12.89 1.45l8 4A2 2 0 0 1 22 7.24v9.53a2 2 0 0 1-1.11 1.79l-8 4a2 2 0 0 1-1.78 0l-8-4a2 2 0 0 1-1.11-1.8V7.24a2 2 0 0 1 1.11-1.79l8-4a2 2 0 0 1 1.78 0z"/></svg>'); }
+        .icon-users { background-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>'); }
+        .icon-logout { background-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16,17 21,12 16,7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>'); }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            padding: 0;
+        }
+
+        .header {
+            background-color: #fff;
+            border-bottom: 1px solid #e0e0e0;
+            padding: 20px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header h1 {
+            font-size: 24px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .header-icons {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .header-icon {
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+            opacity: 0.7;
+            transition: opacity 0.2s;
+        }
+
+        .header-icon:hover {
+            opacity: 1;
+        }
+
+        .content {
+            padding: 40px;
+        }
+
+        /* Stats Cards */
+        .stats-container {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+
+        .stat-card {
+            background: #fff;
+            border-radius: 8px;
+            padding: 30px 25px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .stat-info h3 {
+            font-size: 28px;
+            font-weight: 700;
+            color: #333;
+            margin-bottom: 5px;
+        }
+
+        .stat-info p {
+            font-size: 14px;
+            color: #666;
+            font-weight: 500;
+        }
+
+        .stat-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-size: 24px;
+            background-repeat: no-repeat;
+            background-position: center;
+        }
+
+        .stat-icon.briefcase {
+            background-color: #f3f4f6;
+            background-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="%23666" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>');
+        }
+
+        .stat-icon.check {
+            background-color: #f3f4f6;
+            background-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="%23666" stroke-width="2"><polyline points="20,6 9,17 4,12"/></svg>');
+        }
+
+        .stat-icon.clock {
+            background-color: #f3f4f6;
+            background-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="%23666" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12,6 12,12 16,14"/></svg>');
+        }
+
+        .stat-icon.truck {
+            background-color: #f3f4f6;
+            background-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="%23666" stroke-width="2"><rect x="1" y="3" width="15" height="13"/><polygon points="16,8 20,8 23,11 23,16 16,16 16,8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>');
+        }
+
+        /* Recent Parcels Section */
+        .recent-parcels {
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        .section-header {
+            padding: 25px 30px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .section-header h2 {
+            font-size: 18px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .table-container {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th {
+            background-color: #fafafa;
+            padding: 15px 30px;
+            text-align: left;
+            font-size: 12px;
+            font-weight: 600;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        td {
+            padding: 18px 30px;
+            border-bottom: 1px solid #f0f0f0;
+            font-size: 14px;
+            color: #333;
+        }
+
+        tbody tr:hover {
+            background-color: #fafafa;
+        }
+
+        .status-select {
+            background: none;
+            border: none;
+            color: inherit;
+            font-size: 14px;
+            cursor: pointer;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-family: inherit;
+        }
+
+        .status-select:focus {
+            outline: 2px solid #007bff;
+            outline-offset: -2px;
+        }
+
+        .status-pending {
+            color: #f59e0b;
+            background-color: #fef3c7;
+        }
+
+        .status-transit {
+            color: #3b82f6;
+            background-color: #dbeafe;
+        }
+
+        .status-delivered {
+            color: #10b981;
+            background-color: #d1fae5;
+        }
+
+        .update-btn {
+            background-color: #6b7280;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            font-size: 13px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: background-color 0.2s;
+        }
+
+        .update-btn:hover {
+            background-color: #4b5563;
+        }
+
+        /* Footer */
+        .footer {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+            font-size: 13px;
+        }
+
+        .footer-logo {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 10px;
+        }
+
+        .footer-logo svg {
+            width: 20px;
+            height: 20px;
+            fill: currentColor;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <div class="sidebar-header">
+                <div class="sidebar-logo"></div>
+                <h2>SendIT Admin</h2>
+            </div>
+            <ul class="sidebar-menu">
+                <li><a href="#" class="active"><span class="icon icon-dashboard"></span> Dashboard</a></li>
+                <li><a href="#"><span class="icon icon-parcels"></span> Manage Parcels</a></li>
+                <li><a href="#"><span class="icon icon-users"></span> Users</a></li>
+                <li><a href="#"><span class="icon icon-logout"></span> Logout</a></li>
+            </ul>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <div class="header">
+                <h1>Dashboard</h1>
+                <div class="header-icons">
+                    <svg class="header-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+                        <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+                    </svg>
+                    <svg class="header-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+                        <polyline points="16,17 21,12 16,7"/>
+                        <line x1="21" y1="12" x2="9" y2="12"/>
+                    </svg>
+                </div>
+            </div>
+
+            <div class="content">
+                <!-- Stats Cards -->
+                <div class="stats-container">
+                    <div class="stat-card">
+                        <div class="stat-info">
+                            <h3>1,247</h3>
+                            <p>Total Parcels</p>
+                        </div>
+                        <div class="stat-icon briefcase"></div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-info">
+                            <h3>892</h3>
+                            <p>Delivered</p>
+                        </div>
+                        <div class="stat-icon check"></div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-info">
+                            <h3>203</h3>
+                            <p>Pending</p>
+                        </div>
+                        <div class="stat-icon clock"></div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-info">
+                            <h3>152</h3>
+                            <p>In Transit</p>
+                        </div>
+                        <div class="stat-icon truck"></div>
+                    </div>
+                </div>
+
+                <!-- Recent Parcels Table -->
+                <div class="recent-parcels">
+                    <div class="section-header">
+                        <h2>Recent Parcels</h2>
+                    </div>
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Parcel ID</th>
+                                    <th>Sender</th>
+                                    <th>Receiver</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>#PCL001</td>
+                                    <td>John Doe</td>
+                                    <td>Jane Smith</td>
+                                    <td>
+                                        <select class="status-select status-pending">
+                                            <option value="pending">Pending</option>
+                                            <option value="transit">In Transit</option>
+                                            <option value="delivered">Delivered</option>
+                                        </select>
+                                    </td>
+                                    <td><button class="update-btn">Update</button></td>
+                                </tr>
+                                <tr>
+                                    <td>#PCL002</td>
+                                    <td>Mike Johnson</td>
+                                    <td>Sarah Wilson</td>
+                                    <td>
+                                        <select class="status-select status-transit">
+                                            <option value="pending">Pending</option>
+                                            <option value="transit" selected>In Transit</option>
+                                            <option value="delivered">Delivered</option>
+                                        </select>
+                                    </td>
+                                    <td><button class="update-btn">Update</button></td>
+                                </tr>
+                                <tr>
+                                    <td>#PCL003</td>
+                                    <td>Emma Davis</td>
+                                    <td>Robert Brown</td>
+                                    <td>
+                                        <select class="status-select status-delivered">
+                                            <option value="pending">Pending</option>
+                                            <option value="transit">In Transit</option>
+                                            <option value="delivered" selected>Delivered</option>
+                                        </select>
+                                    </td>
+                                    <td><button class="update-btn">Update</button></td>
+                                </tr>
+                                <tr>
+                                    <td>#PCL004</td>
+                                    <td>Alex Turner</td>
+                                    <td>Lisa Anderson</td>
+                                    <td>
+                                        <select class="status-select status-pending">
+                                            <option value="pending" selected>Pending</option>
+                                            <option value="transit">In Transit</option>
+                                            <option value="delivered">Delivered</option>
+                                        </select>
+                                    </td>
+                                    <td><button class="update-btn">Update</button></td>
+                                </tr>
+                                <tr>
+                                    <td>#PCL005</td>
+                                    <td>Chris Martin</td>
+                                    <td>Nicole White</td>
+                                    <td>
+                                        <select class="status-select status-transit">
+                                            <option value="pending">Pending</option>
+                                            <option value="transit" selected>In Transit</option>
+                                            <option value="delivered">Delivered</option>
+                                        </select>
+                                    </td>
+                                    <td><button class="update-btn">Update</button></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div class="footer">
+                <div class="footer-logo">
+                    <svg viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M3 6h13l3 3v6h-2.5a2.5 2.5 0 0 1-5 0h-7a2.5 2.5 0 0 1-5 0H2V6h1zm16 8.5a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3zM5 14.5a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3zM17 8H3v1h14V8z"/>
+                    </svg>
+                    <span>SendIT</span>
+                </div>
+                <p>© 2025 SendIT. All rights reserved.</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Handle status changes
+        document.querySelectorAll('.status-select').forEach(select => {
+            select.addEventListener('change', function() {
+                // Remove all status classes
+                this.classList.remove('status-pending', 'status-transit', 'status-delivered');
+                
+                // Add appropriate class based on selected value
+                switch(this.value) {
+                    case 'pending':
+                        this.classList.add('status-pending');
+                        break;
+                    case 'transit':
+                        this.classList.add('status-transit');
+                        break;
+                    case 'delivered':
+                        this.classList.add('status-delivered');
+                        break;
+                }
+            });
+        });
+
+        // Handle update button clicks
+        document.querySelectorAll('.update-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const row = this.closest('tr');
+                const parcelId = row.querySelector('td:first-child').textContent;
+                const status = row.querySelector('.status-select').value;
+                
+                // Simulate update
+                this.textContent = 'Updating...';
+                setTimeout(() => {
+                    this.textContent = 'Update';
+                    // You could add a success message here
+                }, 1000);
+            });
+        });
+
+        // Handle sidebar navigation
+        document.querySelectorAll('.sidebar-menu a').forEach(link => {
+            link.addEventListener('click', function(e) {
+                e.preventDefault();
+                
+                // Remove active class from all links
+                document.querySelectorAll('.sidebar-menu a').forEach(l => l.classList.remove('active'));
+                
+                // Add active class to clicked link
+                this.classList.add('active');
+            });
+        });
+    </script>
+</body>
+</html>
