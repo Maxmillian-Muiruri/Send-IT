@@ -8,4 +8,10 @@ import { RouterModule } from '@angular/router';
   standalone: true,
   imports: [RouterModule]
 })
-export class User {}
+export class User {
+  logout() {
+    localStorage.removeItem('sendit_user');
+    localStorage.removeItem('sendit_access_token');
+    window.location.href = '/';
+  }
+}

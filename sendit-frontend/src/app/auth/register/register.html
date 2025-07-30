@@ -9,11 +9,6 @@
       <p class="subtitle">Join SendIT to start shipping your parcels</p>
     </div>
 
-    <div *ngIf="successMessage" class="message-box success">
-      {{ successMessage }}
-    </div>
-    <div *ngIf="errorMessage" class="message-box error">{{ errorMessage }}</div>
-
     <form
       [formGroup]="registerForm"
       (ngSubmit)="onSubmit()"
@@ -41,6 +36,26 @@
           formControlName="email"
           required
         />
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="phone">Phone Number</label>
+        <input
+          type="tel"
+          id="phone"
+          class="form-input"
+          placeholder="Enter your phone number"
+          formControlName="phone"
+          required
+        />
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="role">Account Type</label>
+        <select id="role" class="form-input" formControlName="role" required>
+          <option value="USER">Regular User</option>
+          <option value="COURIER">Courier</option>
+        </select>
       </div>
 
       <div class="form-group">

@@ -1,7 +1,8 @@
 import { bootstrapApplication } from '@angular/platform-browser';
 import { App } from './app/app';
 import { provideRouter, Routes } from '@angular/router';
-import { provideHttpClient } from '@angular/common/http';
+import { provideHttpClient, withInterceptors } from '@angular/common/http';
+import { authInterceptor } from './app/core/interceptors/auth-interceptor';
 import { LandingComponent } from './app/landing';
 
 const routes: Routes = [
@@ -16,7 +17,7 @@ const routes: Routes = [
 bootstrapApplication(App, {
   providers: [
     provideRouter(routes),
-    provideHttpClient()
+    provideHttpClient(withInterceptors([authInterceptor]))
   ]
 })
   .catch(err => console.error(err));

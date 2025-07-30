@@ -1,0 +1,253 @@
+### Enhanced Features Test Suite
+### Courier Statistics, Analytics, and Address Management
+
+@baseUrl = http://localhost:3000
+@adminToken = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI4YzZkYTk2Ny1jYjgzLTQ2NjQtOGU5Yi1mOTVkZTkzZDk2YTciLCJlbWFpbCI6ImRldm1heG1pbGxpYW5tdWlydXJpQGdtYWlsLmNvbSIsInJvbGUiOiJBRE1JTiIsImlhdCI6MTc1MzUyMzE1OSwiZXhwIjoxNzUzNjA5NTU5fQ.Yr4oQjrtd3lfvCTTRfkp51Vq0FzmFcItVZU94Ruau2w
+@courierToken = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI0NjM5NjRjMi1kODlkLTRlMTItOGFlNi1lYmEwMTUzMjY4YzkiLCJlbWFpbCI6InRlc3Rjb3VyaWVyQGV4YW1wbGUuY29tIiwicm9sZSI6IkNPVVJJRVIiLCJpYXQiOjE3NTM1MjMwNzgsImV4cCI6MTc1MzYwOTQ3OH0.roSed8g-wRrKPjbwiCgcax2Jyk4hKdT9Ry8GIAbqo48
+
+### ========================================
+### 1. ENHANCED COURIER STATISTICS
+### ========================================
+
+### Get detailed courier statistics
+GET {{baseUrl}}/courier/f5efcc5f-5c6c-476f-8785-d33fc0f90d10/stats
+Authorization: Bearer {{adminToken}}
+
+### Get courier analytics (weekly)
+GET {{baseUrl}}/courier/f5efcc5f-5c6c-476f-8785-d33fc0f90d10/analytics?period=week
+Authorization: Bearer {{adminToken}}
+
+### Get courier analytics (monthly)
+GET {{baseUrl}}/courier/f5efcc5f-5c6c-476f-8785-d33fc0f90d10/analytics?period=month
+Authorization: Bearer {{adminToken}}
+
+### Get courier analytics (yearly)
+GET {{baseUrl}}/courier/f5efcc5f-5c6c-476f-8785-d33fc0f90d10/analytics?period=year
+Authorization: Bearer {{adminToken}}
+
+### Get overall courier performance summary (Admin only)
+GET {{baseUrl}}/courier/performance/summary
+Authorization: Bearer {{adminToken}}
+
+### ========================================
+### 2. ENHANCED ADDRESS MANAGEMENT
+### ========================================
+
+### Create address with geocoding
+POST {{baseUrl}}/address
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "line1": "123 Main Street",
+  "line2": "Apt 4B",
+  "city": "New York",
+  "state": "NY",
+  "country": "USA",
+  "postalCode": "10001",
+  "userId": "1796a357-d8ab-4f74-8f51-e88ad8773da9"
+}
+
+### Create another address for distance calculation
+POST {{baseUrl}}/address
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "line1": "456 Broadway",
+  "city": "Los Angeles",
+  "state": "CA",
+  "country": "USA",
+  "postalCode": "90210",
+  "userId": "1796a357-d8ab-4f74-8f51-e88ad8773da9"
+}
+
+### Get all addresses (Admin only)
+GET {{baseUrl}}/address?page=1&limit=10
+Authorization: Bearer {{adminToken}}
+
+### Get addresses with search
+GET {{baseUrl}}/address?search=New York&page=1&limit=5
+Authorization: Bearer {{adminToken}}
+
+### Get address by ID
+GET {{baseUrl}}/address/46df6ecd-c177-4566-b8f8-0ea1023cf45e
+Authorization: Bearer {{adminToken}}
+
+### Update address
+PUT {{baseUrl}}/address/46df6ecd-c177-4566-b8f8-0ea1023cf45e
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "line2": "Suite 100",
+  "postalCode": "10002"
+}
+
+### Calculate distance between two addresses
+GET {{baseUrl}}/address/distance/46df6ecd-c177-4566-b8f8-0ea1023cf45e/cc0e2e71-0243-4e5e-9421-ee1a2f223749
+Authorization: Bearer {{adminToken}}
+
+### Find nearby addresses
+GET {{baseUrl}}/address/nearby?lat=40.7128&lng=-74.0060&radius=10
+Authorization: Bearer {{adminToken}}
+
+### Get address statistics (Admin only)
+GET {{baseUrl}}/address/stats/overview
+Authorization: Bearer {{adminToken}}
+
+### ========================================
+### 3. ADDRESS VALIDATION & GEOCODING
+### ========================================
+
+### Validate address format
+POST {{baseUrl}}/address/validate
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "line1": "789 Oak Street",
+  "city": "Chicago",
+  "state": "IL",
+  "country": "USA",
+  "postalCode": "60601"
+}
+
+### Validate invalid address (should fail)
+POST {{baseUrl}}/address/validate
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "line1": "123",
+  "city": "Chicago",
+  "state": "IL",
+  "country": "USA",
+  "postalCode": "invalid"
+}
+
+### Geocode address (get coordinates)
+POST {{baseUrl}}/address/geocode
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "line1": "321 Pine Street",
+  "city": "San Francisco",
+  "state": "CA",
+  "country": "USA",
+  "postalCode": "94102"
+}
+
+### ========================================
+### 4. ENHANCED DELIVERY TRACKING
+### ========================================
+
+### Update courier location (real-time tracking)
+PUT {{baseUrl}}/courier/f5efcc5f-5c6c-476f-8785-d33fc0f90d10/location
+Authorization: Bearer {{courierToken}}
+Content-Type: application/json
+
+{
+  "locationLat": 40.7589,
+  "locationLng": -73.9851,
+  "currentLocation": "Times Square, New York, NY"
+}
+
+### Update courier status
+PUT {{baseUrl}}/courier/f5efcc5f-5c6c-476f-8785-d33fc0f90d10/status
+Authorization: Bearer {{courierToken}}
+Content-Type: application/json
+
+{
+  "status": "ON_DELIVERY"
+}
+
+### Get courier profile with assigned parcels
+GET {{baseUrl}}/courier/profile/me
+Authorization: Bearer {{courierToken}}
+
+### ========================================
+### 5. INTEGRATED PARCEL-ADDRESS WORKFLOW
+### ========================================
+
+### Create parcel with pickup and delivery addresses
+POST {{baseUrl}}/parcel
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "senderId": "1796a357-d8ab-4f74-8f51-e88ad8773da9",
+  "receiverId": "463964c2-d89d-4e12-8ae6-eba0153268c9",
+  "description": "Package with addresses",
+  "weight": 3.5,
+  "pickupAddressId": "46df6ecd-c177-4566-b8f8-0ea1023cf45e",
+  "deliveryAddressId": "cc0e2e71-0243-4e5e-9421-ee1a2f223749"
+}
+
+### Get parcel with address details
+GET {{baseUrl}}/parcel/02e22097-e1e8-4008-91bf-6e0588997f7c
+Authorization: Bearer {{adminToken}}
+
+### ========================================
+### 6. ERROR HANDLING TESTS
+### ========================================
+
+### Try to delete address used by parcels (should fail)
+DELETE {{baseUrl}}/address/46df6ecd-c177-4566-b8f8-0ea1023cf45e
+Authorization: Bearer {{adminToken}}
+
+### Try to access courier analytics without permission
+GET {{baseUrl}}/courier/f5efcc5f-5c6c-476f-8785-d33fc0f90d10/analytics
+Authorization: Bearer {{courierToken}}
+
+### Try to calculate distance with invalid address IDs
+GET {{baseUrl}}/address/distance/invalid-id1/invalid-id2
+Authorization: Bearer {{adminToken}}
+
+### ========================================
+### 7. PERFORMANCE & SCALABILITY TESTS
+### ========================================
+
+### Get couriers with pagination
+GET {{baseUrl}}/courier?page=1&limit=5
+Authorization: Bearer {{adminToken}}
+
+### Get addresses with pagination
+GET {{baseUrl}}/address?page=1&limit=5
+Authorization: Bearer {{adminToken}}
+
+### Search addresses with multiple criteria
+GET {{baseUrl}}/address?search=USA&page=1&limit=10
+Authorization: Bearer {{adminToken}}
+
+### ========================================
+### FEATURE SUMMARY
+### ========================================
+
+# Enhanced Courier Features:
+# ✅ Detailed statistics (delivery rate, earnings, performance rating)
+# ✅ Analytics with time periods (week/month/year)
+# ✅ Performance trends and daily stats
+# ✅ Real-time location tracking
+# ✅ Status management (AVAILABLE, BUSY, OFFLINE, ON_DELIVERY)
+
+# Enhanced Address Features:
+# ✅ Geocoding with coordinates
+# ✅ Address validation
+# ✅ Distance calculation between addresses
+# ✅ Nearby address search
+# ✅ Formatted address generation
+# ✅ Address statistics
+
+# Enhanced Delivery Tracking:
+# ✅ Real-time courier location updates
+# ✅ Status history tracking
+# ✅ Performance analytics
+# ✅ Route optimization data
+
+# Integration Features:
+# ✅ Parcel-address linking
+# ✅ Courier-parcel assignment
+# ✅ Role-based access control
+# ✅ Comprehensive error handling 

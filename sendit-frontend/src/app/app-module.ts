@@ -4,6 +4,8 @@ import { AppRoutingModule } from './app-routing-module';
 import { App } from './app';
 import { Navbar } from './shared/components/navbar/navbar';
 import { RouterModule } from '@angular/router';
+import { provideHttpClient, withInterceptors } from '@angular/common/http';
+import { authInterceptor } from './core/interceptors/auth-interceptor';
 
 @NgModule({
   declarations: [],
@@ -11,9 +13,11 @@ import { RouterModule } from '@angular/router';
     BrowserModule,
     AppRoutingModule,
     Navbar,
-    RouterModule
+    RouterModule,
   ],
-  providers: [],
+  providers: [
+    provideHttpClient(withInterceptors([authInterceptor]))
+  ],
   bootstrap: [App]
 })
 export class AppModule { }

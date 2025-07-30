@@ -1,146 +1,299 @@
-import { Component, AfterViewInit, OnDestroy, ElementRef, ViewChild } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { RouterModule } from '@angular/router';
-// REMOVE: import { GoogleMapsModule } from '@angular/google-maps';
-import * as L from 'leaflet';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
+import { ParcelService } from '../../core/services/parcel';
+import { Parcel } from '../../shared/models/parcel.model';
+import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, FormsModule } from '@angular/forms';
 import { MapComponent } from '../../shared/components/map/map.component';
+import { CommonModule } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
-import { debounceTime, switchMap, catchError } from 'rxjs/operators';
-import { of } from 'rxjs';
+import { Router } from '@angular/router';
+import { AddressService } from '../../core/services/address';
+import { MessageService } from '../../core/services/message.service';
+import { firstValueFrom } from 'rxjs';
 
 @Component({
   selector: 'app-send-parcel',
   templateUrl: './send-parcel.html',
   styleUrls: ['./send-parcel.css'],
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterModule, MapComponent]
+  imports: [CommonModule, ReactiveFormsModule, FormsModule, MapComponent]
 })
-export class SendParcelComponent {
-  parcelForm: FormGroup;
+export class SendParcelComponent implements OnInit {
   loading = false;
-  successMessage: string | null = null;
-  errorMessage: string | null = null;
-
-  baseRate = 5.00;
-  weightCharge = 0.00;
-  distanceCharge = 0.00;
-  totalCost = 5.00;
-
-  // Leaflet/Map properties (dummy for now)
-  pickupCoords = { lat: -1.286389, lng: 36.817223 }; // Nairobi
-  destinationCoords = { lat: -4.043477, lng: 39.668206 }; // Mombasa
+  parcelForm: FormGroup;
+  pickupCoords = { lat: -1.286389, lng: 36.817223 }; // Default to Nairobi
+  destinationCoords = { lat: -1.286389, lng: 36.817223 }; // Default to Nairobi
   distanceKm = 0;
-  ratePerKm = 0.5; // Example rate per km
+  baseRate = 500; // Base rate in KES
+  weightCharge = 0;
+  distanceCharge = 0;
+  totalCost = 0;
+  currentUser: any = null;
+  myAddresses: any[] = [];
+  geocodingInProgress = false;
 
-  constructor(private fb: FormBuilder, private http: HttpClient) {
+  constructor(
+    private parcelService: ParcelService, 
+    private fb: FormBuilder, 
+    private http: HttpClient,
+    private router: Router,
+    private addressService: AddressService,
+    private messageService: MessageService,
+    private cdr: ChangeDetectorRef
+  ) {
+    // Get current user
+    const userStr = localStorage.getItem('sendit_user');
+    this.currentUser = userStr ? JSON.parse(userStr) : null;
+
     this.parcelForm = this.fb.group({
       receiverEmail: ['', [Validators.required, Validators.email]],
+      receiverName: ['', Validators.required],
+      receiverPhone: ['', Validators.required],
       weight: [0.5, [Validators.required, Validators.min(0.1)]],
+      length: [10, [Validators.required, Validators.min(1)]],
+      width: [10, [Validators.required, Validators.min(1)]],
+      height: [10, [Validators.required, Validators.min(1)]],
+      description: ['', Validators.required],
       pickupLocation: ['', Validators.required],
       destination: ['', Validators.required]
     });
-    this.updateCost();
-    this.parcelForm.get('weight')?.valueChanges.subscribe(() => this.updateCost());
-    // Debounce address input to avoid too many requests
-    this.parcelForm.get('pickupLocation')?.valueChanges.pipe(debounceTime(500)).subscribe(value => this.geocodeAddress(value, 'pickup'));
-    this.parcelForm.get('destination')?.valueChanges.pipe(debounceTime(500)).subscribe(value => this.geocodeAddress(value, 'destination'));
   }
 
-  ngOnDestroy() {
-    // No map cleanup needed here as map is now a child component
-  }
+  ngOnInit() {
+    // Load user's saved addresses
+    this.addressService.getMyAddresses().subscribe({
+      next: (addresses) => { this.myAddresses = addresses; },
+      error: () => { this.myAddresses = []; }
+    });
 
-  private geocodeAddress(address: string, type: 'pickup' | 'destination') {
-    if (!address) {
-      if (type === 'pickup') this.pickupCoords = { lat: NaN, lng: NaN };
-      if (type === 'destination') this.destinationCoords = { lat: NaN, lng: NaN };
-      this.updateRoute();
-      return;
-    }
-    const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address)}`;
-    this.http.get<any[]>(url).pipe(
-      catchError(() => of([]))
-    ).subscribe(results => {
-      if (results.length > 0) {
-        const coords = { lat: parseFloat(results[0].lat), lng: parseFloat(results[0].lon) };
-        if (type === 'pickup') this.pickupCoords = coords;
-        if (type === 'destination') this.destinationCoords = coords;
-        this.errorMessage = null;
-      } else {
-        this.errorMessage = `Could not find location for ${type} address.`;
-        if (type === 'pickup') this.pickupCoords = { lat: NaN, lng: NaN };
-        if (type === 'destination') this.destinationCoords = { lat: NaN, lng: NaN };
-      }
-      this.updateRoute();
+    // Listen for weight changes to update cost
+    this.parcelForm.get('weight')?.valueChanges.subscribe(() => {
+      this.updateCost();
     });
   }
 
-  updateRoute() {
-    const pickup = this.parcelForm.get('pickupLocation')?.value;
-    const destination = this.parcelForm.get('destination')?.value;
-    const pickupValid = this.pickupCoords && !isNaN(this.pickupCoords.lat) && !isNaN(this.pickupCoords.lng);
-    const destValid = this.destinationCoords && !isNaN(this.destinationCoords.lat) && !isNaN(this.destinationCoords.lng);
-    if (pickup && destination && pickupValid && destValid) {
-      this.distanceKm = this.calculateDistanceKm(this.pickupCoords, this.destinationCoords);
-    } else {
-      this.distanceKm = 0;
-    }
-    this.updateCost();
-    // Map updates via @Input to MapComponent
-  }
-
-  updateCost() {
-    const weight = parseFloat(this.parcelForm.get('weight')?.value) || 0;
-    this.weightCharge = weight > 1 ? (weight - 1) * 2 : 0;
-    // Only calculate distance charge if both pickup and destination are filled
-    const pickup = this.parcelForm.get('pickupLocation')?.value;
-    const destination = this.parcelForm.get('destination')?.value;
-    if (pickup && destination) {
-      this.distanceCharge = this.distanceKm * this.ratePerKm;
-    } else {
-      this.distanceCharge = 0;
-    }
-    this.totalCost = this.baseRate + this.weightCharge + this.distanceCharge;
+  logout() {
+    // Clear all authentication data
+    localStorage.removeItem('sendit_access_token');
+    localStorage.removeItem('sendit_user_role');
+    localStorage.removeItem('sendit_user_id');
+    localStorage.removeItem('sendit_user_email');
+    localStorage.removeItem('sendit_user_name');
+    localStorage.removeItem('sendit_user');
+    
+    // Clear any other session data
+    sessionStorage.clear();
+    
+    // Redirect to landing page
+    window.location.href = '/';
   }
 
   onSubmit() {
     if (this.parcelForm.invalid) {
-      this.errorMessage = 'Please fill in all fields correctly.';
-      setTimeout(() => this.errorMessage = null, 3000);
+      this.messageService.showError('Please fill in all required fields correctly.');
       return;
     }
+
+    if (this.distanceKm === 0) {
+      this.messageService.showError('Please enter valid pickup and destination addresses to calculate cost.');
+      return;
+    }
+
     this.loading = true;
-    this.successMessage = null;
-    this.errorMessage = null;
-    setTimeout(() => {
-      this.loading = false;
-      this.successMessage = 'Your parcel was sent successfully!';
-      setTimeout(() => this.successMessage = null, 3000);
-      this.parcelForm.reset({ weight: 0.5 });
+
+    const formData = this.parcelForm.value;
+
+    // Prepare parcel data for comprehensive endpoint
+    const parcelData = {
+      receiverEmail: formData.receiverEmail,
+      receiverName: formData.receiverName,
+      receiverPhone: formData.receiverPhone,
+      weight: formData.weight,
+      dimensions: {
+        length: formData.length,
+        width: formData.width,
+        height: formData.height
+      },
+      description: formData.description,
+      pickupAddress: {
+        street: formData.pickupLocation,
+        city: '', // Will be determined by geocoding
+        state: '',
+        postalCode: '',
+        country: 'Kenya'
+      },
+      deliveryAddress: {
+        street: formData.destination,
+        city: '', // Will be determined by geocoding
+        state: '',
+        postalCode: '',
+        country: 'Kenya'
+      }
+    };
+
+    // Create parcel using comprehensive endpoint
+    this.parcelService.createParcel(parcelData).subscribe({
+      next: (response: any) => {
+        this.loading = false;
+        this.messageService.showSuccess('Parcel sent successfully! 📦 Confirmation email will be sent shortly.');
+        this.parcelForm.reset();
+        this.resetForm();
+        localStorage.setItem('refresh_dashboard', 'true');
+        setTimeout(() => {
+          this.router.navigate(['/user']);
+        }, 2000);
+      },
+      error: (error: any) => {
+        this.loading = false;
+        this.messageService.showError(error.error?.message || 'Failed to send parcel. Please try again.');
+      }
+    });
+  }
+
+  async onAddressBlur() {
+    if (this.geocodingInProgress) return;
+    
+    const pickup = this.parcelForm.get('pickupLocation')?.value;
+    const destination = this.parcelForm.get('destination')?.value;
+    
+    console.log('Address blur triggered:', { pickup, destination });
+    
+    this.geocodingInProgress = true;
+    
+    try {
+      // Geocode pickup location
+      if (pickup) {
+        try {
+          console.log('Geocoding pickup:', pickup);
+          const pickupGeo = await firstValueFrom(this.addressService.geocodeAddress({
+            line1: pickup,
+            city: '',
+            state: '',
+            country: 'Kenya'
+          }));
+          console.log('Pickup geocoding result:', pickupGeo);
+          if (pickupGeo && pickupGeo.lat && pickupGeo.lng) {
+            this.pickupCoords = { lat: pickupGeo.lat, lng: pickupGeo.lng };
+            console.log('Pickup coordinates set:', this.pickupCoords);
+            this.cdr.detectChanges(); // Trigger map update
+          }
+        } catch (e) {
+          console.error('Geocoding pickup error:', e);
+          this.messageService.showError('Could not find pickup location. Please check the address.');
+        }
+      }
+      
+      // Geocode destination location
+      if (destination) {
+        try {
+          console.log('Geocoding destination:', destination);
+          const destGeo = await firstValueFrom(this.addressService.geocodeAddress({
+            line1: destination,
+            city: '',
+            state: '',
+            country: 'Kenya'
+          }));
+          console.log('Destination geocoding result:', destGeo);
+          if (destGeo && destGeo.lat && destGeo.lng) {
+            this.destinationCoords = { lat: destGeo.lat, lng: destGeo.lng };
+            console.log('Destination coordinates set:', this.destinationCoords);
+            this.cdr.detectChanges(); // Trigger map update
+          }
+        } catch (e) {
+          console.error('Geocoding destination error:', e);
+          this.messageService.showError('Could not find destination location. Please check the address.');
+        }
+      }
+      
+      // Calculate distance and cost if both addresses are geocoded
+      console.log('Checking coordinates for distance calculation:', {
+        pickupCoords: this.pickupCoords,
+        destinationCoords: this.destinationCoords,
+        pickupLat: this.pickupCoords.lat,
+        destinationLat: this.destinationCoords.lat
+      });
+      
+      if (pickup && destination && this.pickupCoords.lat !== -1.286389 && this.destinationCoords.lat !== -1.286389) {
+        this.distanceKm = this.calculateDistance(
+          this.pickupCoords.lat, this.pickupCoords.lng,
+          this.destinationCoords.lat, this.destinationCoords.lng
+        );
+        this.updateCost();
+        console.log('Distance calculated:', this.distanceKm, 'km');
+        console.log('Cost updated:', this.totalCost);
+        this.cdr.detectChanges(); // Trigger UI update
+      } else {
+        console.log('Distance calculation skipped - coordinates not ready');
+      }
+    } finally {
+      this.geocodingInProgress = false;
+      this.cdr.detectChanges(); // Final UI update
+    }
+  }
+
+  // Manual method to recalculate cost (for debugging)
+  recalculateCost() {
+    const pickup = this.parcelForm.get('pickupLocation')?.value;
+    const destination = this.parcelForm.get('destination')?.value;
+    
+    console.log('Manual cost recalculation:', { pickup, destination, pickupCoords: this.pickupCoords, destinationCoords: this.destinationCoords });
+    
+    if (pickup && destination && this.pickupCoords.lat !== -1.286389 && this.destinationCoords.lat !== -1.286389) {
+      this.distanceKm = this.calculateDistance(
+        this.pickupCoords.lat, this.pickupCoords.lng,
+        this.destinationCoords.lat, this.destinationCoords.lng
+      );
       this.updateCost();
-    }, 1500);
+      console.log('Manual recalculation - Distance:', this.distanceKm, 'km, Cost:', this.totalCost);
+    } else {
+      console.log('Manual recalculation failed - missing coordinates');
+    }
   }
 
-  showNotification() {
-    this.errorMessage = 'No new notifications';
-    setTimeout(() => this.errorMessage = null, 2000);
+  calculateDistance(lat1: number, lon1: number, lat2: number, lon2: number): number {
+    const toRad = (v: number) => v * Math.PI / 180;
+    const R = 6371; // km
+    const dLat = toRad(lat2 - lat1);
+    const dLon = toRad(lon2 - lon1);
+    const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+      Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) *
+      Math.sin(dLon/2) * Math.sin(dLon/2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+    return R * c;
   }
 
-  showProfileMenu() {
-    this.successMessage = 'Profile menu would open here';
-    setTimeout(() => this.successMessage = null, 2000);
+  updateCost() {
+    const weight = this.parcelForm.get('weight')?.value || 0.5;
+    this.weightCharge = weight * 200; // 200 KES per kg
+    this.distanceCharge = this.distanceKm * 50; // 50 KES per km
+    this.totalCost = this.baseRate + this.weightCharge + this.distanceCharge;
+    console.log('Cost updated:', {
+      baseRate: this.baseRate,
+      weightCharge: this.weightCharge,
+      distanceCharge: this.distanceCharge,
+      totalCost: this.totalCost
+    });
   }
 
-  // Haversine formula for distance between two lat/lng points
-  private calculateDistanceKm(a: {lat: number, lng: number}, b: {lat: number, lng: number}): number {
-    const toRad = (x: number) => x * Math.PI / 180;
-    const R = 6371; // Earth radius in km
-    const dLat = toRad(b.lat - a.lat);
-    const dLng = toRad(b.lng - a.lng);
-    const lat1 = toRad(a.lat);
-    const lat2 = toRad(b.lat);
-    const h = Math.sin(dLat/2) ** 2 + Math.cos(lat1) * Math.cos(lat2) * Math.sin(dLng/2) ** 2;
-    return 2 * R * Math.asin(Math.sqrt(h));
+  resetForm() {
+    this.parcelForm.reset({
+      weight: 0.5,
+      length: 10,
+      width: 10,
+      height: 10
+    });
+    this.distanceKm = 0;
+    this.totalCost = 0;
+    this.weightCharge = 0;
+    this.distanceCharge = 0;
+    this.pickupCoords = { lat: -1.286389, lng: 36.817223 };
+    this.destinationCoords = { lat: -1.286389, lng: 36.817223 };
+  }
+
+  showNotification() { 
+    this.router.navigate(['/user/notifications']); 
+  }
+  
+  showProfileMenu() { 
+    this.router.navigate(['/user/profile']); 
   }
 } 

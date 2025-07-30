@@ -3,9 +3,9 @@ import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { UserRoutingModule } from './user-routing-module';
 import { User } from './user';
-import { ViewSent } from './view-sent/view-sent';
-import { ViewReceived } from './view-received/view-received';
-import { DashboardComponent } from './dashboard/dashboard';
+import { ViewSentComponent } from './view-sent/view-sent';
+import { ViewReceivedComponent } from './view-received/view-received';
+import { UserDashboardComponent } from './dashboard/dashboard';
 import { SendParcelComponent } from './send-parcel/send-parcel';
 import { TrackParcelComponent } from './track-parcel/track-parcel';
 import { GoogleMap } from './track-parcel/google-map/google-map';
@@ -21,9 +21,9 @@ import { NotificationCenter } from './notification-center/notification-center';
     ReactiveFormsModule,
     UserRoutingModule,
     User,
-    ViewSent,
-    ViewReceived,
-    DashboardComponent,
+    ViewSentComponent,
+    ViewReceivedComponent,
+    UserDashboardComponent,
     SendParcelComponent,
     TrackParcelComponent,
     GoogleMap,

@@ -5,153 +5,208 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>SendIT - Courier Dashboard</title>
     <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
       body {
         font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
           sans-serif;
-        background: #f8fafc;
-        color: #22223b;
-        margin: 0;
+        background-color: #f5f5f5;
+        color: #333;
+      }
+      .container {
+        display: flex;
+        min-height: 100vh;
+      }
+      /* Sidebar */
+      .sidebar {
+        width: 200px;
+        background-color: #fff;
+        border-right: 1px solid #e0e0e0;
+        padding: 20px 0;
+      }
+      .sidebar-header {
+        padding: 0 20px 30px;
+        border-bottom: 1px solid #e0e0e0;
+        margin-bottom: 20px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+      .sidebar-header h2 {
+        font-size: 16px;
+        font-weight: 600;
+        color: #333;
+      }
+      .sidebar-logo {
+        width: 20px;
+        height: 20px;
+        background-color: #333;
+        border-radius: 50%;
+      }
+      .sidebar-menu {
+        list-style: none;
+      }
+      .sidebar-menu li {
+        margin-bottom: 5px;
+      }
+      .sidebar-menu a {
+        display: flex;
+        align-items: center;
+        padding: 12px 20px;
+        text-decoration: none;
+        color: #666;
+        font-size: 14px;
+        transition: all 0.2s;
+      }
+      .sidebar-menu a:hover,
+      .sidebar-menu a.active {
+        background-color: #f0f0f0;
+        color: #333;
+      }
+      .sidebar-menu .icon {
+        width: 16px;
+        height: 16px;
+        margin-right: 12px;
+        background-size: contain;
+      }
+      .icon-dashboard {
+        background: #6c63ff;
+        border-radius: 4px;
+      }
+      .icon-parcels {
+        background: #ff6b35;
+        border-radius: 4px;
+      }
+      .icon-location {
+        background: #10b981;
+        border-radius: 4px;
+      }
+      .icon-logout {
+        background: #e53e3e;
+        border-radius: 4px;
+      }
+      /* Main Content */
+      .main-content {
+        flex: 1;
         padding: 0;
       }
-      header {
-        background: #22223b;
-        color: #fff;
-        padding: 0.75rem 0;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
-        border-bottom: 1px solid #e9ecef;
-      }
-      .header-content {
-        max-width: 1200px;
-        margin: 0 auto;
+      .header {
+        background-color: #fff;
+        border-bottom: 1px solid #e0e0e0;
+        padding: 20px 40px;
         display: flex;
-        align-items: center;
         justify-content: space-between;
-        padding: 0 2rem;
-        min-height: 64px;
-      }
-      .logo {
-        font-size: 2rem;
-        font-weight: 800;
-        color: #fff;
-        letter-spacing: 1px;
-        display: flex;
         align-items: center;
+      }
+      .header h1 {
+        font-size: 24px;
+        font-weight: 600;
+        color: #333;
       }
       .header-icons {
         display: flex;
         align-items: center;
-        gap: 1.2rem;
+        gap: 15px;
       }
-      .notification-emoji,
-      .profile-emoji {
-        font-size: 1.5rem;
-        text-decoration: none;
-        color: #fff;
-        background: #333;
-        transition: background 0.2s, color 0.2s;
-        border-radius: 50%;
-        padding: 0.2rem 0.5rem;
-      }
-      .notification-emoji:hover,
-      .profile-emoji:hover {
-        background: #fff;
-        color: #ff6b35;
-      }
-      .main-container {
-        max-width: 1200px;
-        margin: 2rem auto;
-        padding: 0 2rem;
-      }
-      .dashboard-header {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        margin-bottom: 2rem;
-      }
-      .dashboard-title {
-        font-size: 2rem;
-        font-weight: 700;
-        color: #22223b;
-      }
-      .dashboard-actions {
-        display: flex;
-        gap: 1rem;
-      }
-      .btn {
-        background: #22223b;
-        color: #fff;
-        border: none;
-        border-radius: 6px;
-        padding: 0.6rem 1.5rem;
-        font-size: 1rem;
-        font-weight: 500;
+      .header-icon {
+        width: 20px;
+        height: 20px;
         cursor: pointer;
-        transition: background 0.2s;
+        opacity: 0.7;
+        transition: opacity 0.2s;
       }
-      .btn:hover {
-        background: #ff6b35;
-        color: #fff;
+      .header-icon:hover {
+        opacity: 1;
       }
+      .content {
+        padding: 40px;
+      }
+      /* Parcels Table */
       .parcels-section {
         background: #fff;
-        border-radius: 12px;
-        border: 1px solid #e5e7eb;
-        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
-        padding: 2rem;
-        margin-bottom: 2rem;
+        border-radius: 8px;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        margin-bottom: 40px;
+        padding: 30px 25px;
       }
-      .parcels-table {
+      .parcels-section h2 {
+        font-size: 18px;
+        font-weight: 600;
+        color: #333;
+        margin-bottom: 20px;
+      }
+      .table-container {
+        overflow-x: auto;
+      }
+      table {
         width: 100%;
         border-collapse: collapse;
-        margin-bottom: 1.5rem;
       }
-      .parcels-table th,
-      .parcels-table td {
-        padding: 1rem 0.75rem;
+      th {
+        background-color: #fafafa;
+        padding: 15px 30px;
         text-align: left;
-        border-bottom: 1px solid #f2f2f2;
-        font-size: 1rem;
-      }
-      .parcels-table th {
-        color: #6b7280;
-        font-weight: 700;
-        background: #f8fafc;
+        font-size: 12px;
+        font-weight: 600;
+        color: #666;
         text-transform: uppercase;
-        font-size: 0.95rem;
+        letter-spacing: 0.5px;
+        border-bottom: 1px solid #e0e0e0;
       }
-      .parcels-table tr:last-child td {
-        border-bottom: none;
+      td {
+        padding: 18px 30px;
+        border-bottom: 1px solid #f0f0f0;
+        font-size: 14px;
+        color: #333;
+      }
+      tbody tr:hover {
+        background-color: #fafafa;
       }
       .status-select {
-        padding: 0.4rem 0.8rem;
+        background: none;
+        border: none;
+        color: inherit;
+        font-size: 14px;
+        cursor: pointer;
+        padding: 4px 8px;
         border-radius: 4px;
-        border: 1px solid #e5e7eb;
-        font-size: 1rem;
-        background: #f8fafc;
-        color: #22223b;
+        font-family: inherit;
+      }
+      .status-pending {
+        color: #f59e0b;
+        background-color: #fef3c7;
+      }
+      .status-transit {
+        color: #3b82f6;
+        background-color: #dbeafe;
+      }
+      .status-delivered {
+        color: #10b981;
+        background-color: #d1fae5;
       }
       .update-btn {
-        background: #ff6b35;
-        color: #fff;
+        background-color: #ff6b35;
+        color: white;
         border: none;
+        padding: 8px 16px;
         border-radius: 4px;
-        padding: 0.4rem 1rem;
-        font-size: 1rem;
-        font-weight: 500;
+        font-size: 13px;
         cursor: pointer;
-        transition: background 0.2s;
+        font-weight: 500;
+        transition: background-color 0.2s;
       }
       .update-btn:hover {
-        background: #22223b;
-        color: #fff;
+        background-color: #22223b;
       }
+      /* Location Section */
       .location-section {
         background: #fff;
-        border-radius: 12px;
-        border: 1px solid #e5e7eb;
-        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
-        padding: 2rem;
-        margin-bottom: 2rem;
+        border-radius: 8px;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        padding: 30px 25px;
         display: flex;
         align-items: center;
         gap: 2rem;
@@ -198,14 +253,10 @@
         font-style: italic;
       }
       @media (max-width: 900px) {
-        .header-content,
-        .main-container {
+        .container,
+        .main-content,
+        .content {
           padding: 0 1rem;
-        }
-        .dashboard-header {
-          flex-direction: column;
-          align-items: flex-start;
-          gap: 1rem;
         }
         .location-section {
           flex-direction: column;
@@ -219,127 +270,111 @@
     </style>
   </head>
   <body>
-    <header>
-      <div class="header-content">
-        <span class="logo">SendIT</span>
-        <div class="header-icons">
-          <a href="#" class="notification-emoji" title="Notifications">🔔</a>
-          <a href="#" class="profile-emoji" title="Profile">👤</a>
+    <div class="container">
+      <!-- Sidebar -->
+      <div class="sidebar">
+        <div class="sidebar-header">
+          <div class="sidebar-logo"></div>
+          <h2>SendIT Courier</h2>
         </div>
+        <ul class="sidebar-menu">
+          <li>
+            <a href="#" class="active"
+              ><span class="icon icon-dashboard"></span> Dashboard</a
+            >
+          </li>
+          <li>
+            <a href="#"><span class="icon icon-parcels"></span> My Parcels</a>
+          </li>
+          <li>
+            <a href="#"
+              ><span class="icon icon-location"></span> Update Location</a
+            >
+          </li>
+          <li>
+            <a href="#"><span class="icon icon-logout"></span> Logout</a>
+          </li>
+        </ul>
       </div>
-    </header>
-    <div class="main-container">
-      <div class="dashboard-header">
-        <div class="dashboard-title">Courier Dashboard</div>
-        <div class="dashboard-actions">
-          <button class="btn" onclick="simulateRefresh()">
-            Refresh Parcels
-          </button>
-          <button class="btn" onclick="simulateLogout()">Logout</button>
+      <!-- Main Content -->
+      <div class="main-content">
+        <div class="header">
+          <h1>Courier Dashboard</h1>
+          <div class="header-icons">
+            <span class="header-icon">🔔</span>
+            <span class="header-icon">👤</span>
+          </div>
         </div>
-      </div>
-      <div class="parcels-section">
-        <table class="parcels-table">
-          <thead>
-            <tr>
-              <th>Parcel ID</th>
-              <th>Sender</th>
-              <th>Receiver</th>
-              <th>Status</th>
-              <th>Update</th>
-            </tr>
-          </thead>
-          <tbody id="parcels-tbody">
-            <!-- Rows will be populated by JS -->
-          </tbody>
-        </table>
-      </div>
-      <div class="location-section">
-        <div class="location-info">
-          <div class="location-title">Current Location</div>
-          <div class="location-text" id="courier-location">Nairobi, Kenya</div>
-          <button
-            class="location-update-btn"
-            onclick="simulateLocationUpdate()"
-          >
-            Update Location
-          </button>
+        <div class="content">
+          <!-- Parcels Table -->
+          <div class="parcels-section">
+            <h2>My Parcels</h2>
+            <div class="table-container">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Parcel ID</th>
+                    <th>Sender</th>
+                    <th>Receiver</th>
+                    <th>Status</th>
+                    <th>Update</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>#PCL1001</td>
+                    <td>Alice</td>
+                    <td>Bob</td>
+                    <td>
+                      <select class="status-select status-pending">
+                        <option value="Pending" selected>Pending</option>
+                        <option value="In Transit">In Transit</option>
+                        <option value="Delivered">Delivered</option>
+                      </select>
+                    </td>
+                    <td><button class="update-btn">Update</button></td>
+                  </tr>
+                  <tr>
+                    <td>#PCL1002</td>
+                    <td>Carol</td>
+                    <td>Dave</td>
+                    <td>
+                      <select class="status-select status-transit">
+                        <option value="Pending">Pending</option>
+                        <option value="In Transit" selected>In Transit</option>
+                        <option value="Delivered">Delivered</option>
+                      </select>
+                    </td>
+                    <td><button class="update-btn">Update</button></td>
+                  </tr>
+                  <tr>
+                    <td>#PCL1003</td>
+                    <td>Eve</td>
+                    <td>Frank</td>
+                    <td>
+                      <select class="status-select status-delivered">
+                        <option value="Pending">Pending</option>
+                        <option value="In Transit">In Transit</option>
+                        <option value="Delivered" selected>Delivered</option>
+                      </select>
+                    </td>
+                    <td><button class="update-btn">Update</button></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+          <!-- Location Section -->
+          <div class="location-section">
+            <div class="location-info">
+              <div class="location-title">Current Location</div>
+              <div class="location-text">Nairobi, Kenya</div>
+              <button class="location-update-btn">Update Location</button>
+            </div>
+            <div class="map-placeholder">[Map Placeholder]</div>
+          </div>
         </div>
-        <div class="map-placeholder">[Map Placeholder]</div>
       </div>
     </div>
-    <script>
-      // Dummy data for parcels
-      const parcels = [
-        { id: "#PCL1001", sender: "Alice", receiver: "Bob", status: "Pending" },
-        {
-          id: "#PCL1002",
-          sender: "Carol",
-          receiver: "Dave",
-          status: "In Transit",
-        },
-        {
-          id: "#PCL1003",
-          sender: "Eve",
-          receiver: "Frank",
-          status: "Delivered",
-        },
-      ];
-      function renderParcels() {
-        const tbody = document.getElementById("parcels-tbody");
-        tbody.innerHTML = "";
-        parcels.forEach((parcel, idx) => {
-          const tr = document.createElement("tr");
-          tr.innerHTML = `
-          <td>${parcel.id}</td>
-          <td>${parcel.sender}</td>
-          <td>${parcel.receiver}</td>
-          <td>
-            <select class="status-select" onchange="updateStatus(${idx}, this.value)">
-              <option value="Pending" ${
-                parcel.status === "Pending" ? "selected" : ""
-              }>Pending</option>
-              <option value="In Transit" ${
-                parcel.status === "In Transit" ? "selected" : ""
-              }>In Transit</option>
-              <option value="Delivered" ${
-                parcel.status === "Delivered" ? "selected" : ""
-              }>Delivered</option>
-            </select>
-          </td>
-          <td><button class="update-btn" onclick="confirmUpdate(${idx})">Update</button></td>
-        `;
-          tbody.appendChild(tr);
-        });
-      }
-      function updateStatus(idx, value) {
-        parcels[idx].status = value;
-      }
-      function confirmUpdate(idx) {
-        alert(
-          `Status for ${parcels[idx].id} updated to ${parcels[idx].status}`
-        );
-        renderParcels();
-      }
-      function simulateLocationUpdate() {
-        const locations = [
-          "Nairobi, Kenya",
-          "Mombasa, Kenya",
-          "Kisumu, Kenya",
-          "Eldoret, Kenya",
-        ];
-        const loc = locations[Math.floor(Math.random() * locations.length)];
-        document.getElementById("courier-location").textContent = loc;
-        alert("Location updated to " + loc);
-      }
-      function simulateRefresh() {
-        alert("Parcel list refreshed!");
-      }
-      function simulateLogout() {
-        alert("Logging out...");
-      }
-      // Initial render
-      renderParcels();
-    </script>
   </body>
 </html>

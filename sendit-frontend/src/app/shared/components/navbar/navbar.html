@@ -17,9 +17,9 @@
     <a *ngIf="isLoggedIn" routerLink="/user/track" routerLinkActive="active"
       >Track</a
     >
-    <a *ngIf="isLoggedIn" routerLink="/user/history" routerLinkActive="active"
+    <!-- <a *ngIf="isLoggedIn" routerLink="/user/history" routerLinkActive="active"
       >History</a
-    >
+    > -->
     <a *ngIf="isLoggedIn" routerLink="/user/profile" routerLinkActive="active"
       >Profile</a
     >
@@ -32,7 +32,7 @@
     <a *ngIf="isLoggedIn" routerLink="/logout" routerLinkActive="active"
       >Logout</a
     >
-    <a *ngIf="!isLoggedIn" routerLink="/auth/login" routerLinkActive="active"
+    <!-- <a *ngIf="!isLoggedIn" routerLink="/auth/login" routerLinkActive="active"
       >Login</a
     >
     <a *ngIf="!isLoggedIn" routerLink="/auth/register" routerLinkActive="active"
@@ -40,9 +40,7 @@
     >
     <a *ngIf="isLoggedIn" routerLink="/contact" routerLinkActive="active"
       >Contact</a
-    >
-    <a href="/user/notifications" routerLinkActive="active">🔔</a>
-    
+    > -->
   </div>
   <button
     class="notification-btn"
@@ -60,4 +58,5 @@
   <button (click)="toggleLogin()" style="margin-left: 1rem">
     Toggle to see full navbar
   </button>
+  <a href="/user/notifications" routerLinkActive="active">🔔</a>
 </nav>

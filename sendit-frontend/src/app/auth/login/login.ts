@@ -2,6 +2,8 @@ import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { RouterModule, Router } from '@angular/router';
+import { HttpClient } from '@angular/common/http';
+import { MessageService } from '../../core/services/message.service';
 
 @Component({
   selector: 'app-user-login',
@@ -13,10 +15,13 @@ import { RouterModule, Router } from '@angular/router';
 export class UserLoginComponent {
   loginForm: FormGroup;
   loading = false;
-  successMessage: string | null = null;
-  errorMessage: string | null = null;
 
-  constructor(private fb: FormBuilder, private router: Router) {
+  constructor(
+    private fb: FormBuilder, 
+    private router: Router, 
+    private http: HttpClient,
+    private messageService: MessageService
+  ) {
     this.loginForm = this.fb.group({
       email: ['', [Validators.required, Validators.email]],
       password: ['', Validators.required],
@@ -26,25 +31,39 @@ export class UserLoginComponent {
 
   onSubmit() {
     if (this.loginForm.invalid) {
+      this.messageService.showError('Please fill in all required fields correctly.');
       return;
     }
     this.loading = true;
-    this.successMessage = null;
-    this.errorMessage = null;
-    const { email, password, remember } = this.loginForm.value;
-    // Simulate API call
-    setTimeout(() => {
-      this.loading = false;
-      if (email === 'demo@example.com' && password === 'password') {
-        this.successMessage = 'Login successful! Redirecting to dashboard...';
+    const { email, password } = this.loginForm.value;
+    this.http.post<any>('http://localhost:3000/auth/login', { 
+      email: email.trim(), 
+      password: password.trim() 
+    }).subscribe({
+      next: (res) => {
+        localStorage.setItem('sendit_access_token', res.access_token);
+        localStorage.setItem('sendit_user', JSON.stringify(res.user));
+        this.messageService.showSuccess('Login successful! Redirecting to dashboard...');
+        this.loading = false;
         setTimeout(() => {
-          this.successMessage = null;
-          this.router.navigate(['/user/dashboard']);
+          switch (res.user.role) {
+            case 'ADMIN':
+              this.router.navigate(['/admin']);
+              break;
+            case 'COURIER':
+              this.router.navigate(['/courier']);
+              break;
+            case 'USER':
+            default:
+              this.router.navigate(['/user']);
+              break;
+          }
         }, 1500);
-      } else {
-        this.errorMessage = 'Invalid credentials. Try demo@example.com / password';
-        setTimeout(() => this.errorMessage = null, 3000);
+      },
+      error: (err) => {
+        this.loading = false;
+        this.messageService.showError(err.error?.message || 'Login failed. Please try again.');
       }
-    }, 1500);
+    });
   }
 } 
