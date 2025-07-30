@@ -1,32 +1,37 @@
 import { Injectable } from '@angular/core';
-import { Observable } from 'rxjs';
 import { HttpClient } from '@angular/common/http';
-import { map } from "rxjs/operators";
-import { Parcel } from '../../shared/models/parcel.model';
+import { Observable } from 'rxjs';
+import { environment } from '../../../environments/environment';
+
+export interface Parcel {
+  id: string;
+  trackingCode: string;
+  description: string;
+  weight: number;
+  status: string;
+  totalCost: number;
+  distanceKm: number;
+  estimatedDeliveryTime: number;
+  sender: any;
+  receiver: any;
+  pickupAddress: any;
+  deliveryAddress: any;
+  courier?: any;
+  createdAt: string;
+  updatedAt: string;
+}
 
 @Injectable({
   providedIn: 'root'
 })
 export class ParcelService {
-  private apiUrl = 'http://localhost:3000/parcel';
+  private apiUrl = `${environment.apiUrl}/parcel`;
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient) { }
 
-  // Get all parcels (with optional filters)
-  getParcels(filters?: any): Observable<Parcel[]> {
-    let url = this.apiUrl;
-    if (filters) {
-      const params = new URLSearchParams();
-      Object.keys(filters).forEach(key => {
-        if (filters[key] !== null && filters[key] !== undefined) {
-          params.append(key, filters[key]);
-        }
-      });
-      url += `?${params.toString()}`;
-    }
-    return this.http.get<any>(url).pipe(
-      map(response => response.parcels || [])
-    );
+  // Get all parcels
+  getParcels(): Observable<Parcel[]> {
+    return this.http.get<Parcel[]>(this.apiUrl);
   }
 
   // Get parcel by ID
@@ -34,76 +39,52 @@ export class ParcelService {
     return this.http.get<Parcel>(`${this.apiUrl}/${id}`);
   }
 
-  // Create new parcel
-  createParcel(parcelData: any): Observable<Parcel> {
+  // Create parcel
+  createParcel(parcel: any): Observable<Parcel> {
+    return this.http.post<Parcel>(this.apiUrl, parcel);
+  }
+
+  // Create comprehensive parcel (with addresses)
+  createParcelComprehensive(parcelData: any): Observable<Parcel> {
     return this.http.post<Parcel>(`${this.apiUrl}/comprehensive`, parcelData);
   }
 
   // Update parcel
-  updateParcel(id: string, updatedData: Partial<Parcel>): Observable<Parcel> {
-    return this.http.put<Parcel>(`${this.apiUrl}/${id}`, updatedData);
+  updateParcel(id: string, parcel: any): Observable<Parcel> {
+    return this.http.put<Parcel>(`${this.apiUrl}/${id}`, parcel);
   }
 
   // Delete parcel
-  deleteParcel(id: string): Observable<any> {
-    return this.http.delete(`${this.apiUrl}/${id}`);
+  deleteParcel(id: string): Observable<void> {
+    return this.http.delete<void>(`${this.apiUrl}/${id}`);
   }
 
   // Update parcel status
-  updateParcelStatus(id: string, status: string, notes?: string): Observable<Parcel> {
-    return this.http.put<Parcel>(`${this.apiUrl}/${id}/status`, { status, notes });
+  updateStatus(id: string, status: string): Observable<Parcel> {
+    return this.http.put<Parcel>(`${this.apiUrl}/${id}/status`, { status });
   }
 
   // Assign courier to parcel
-  assignParcelToCourier(parcelId: string, courierId: string): Observable<Parcel> {
+  assignCourierToParcel(parcelId: string, courierId: string): Observable<Parcel> {
     return this.http.put<Parcel>(`${this.apiUrl}/${parcelId}/assign-courier`, { courierId });
   }
 
-  // Calculate pricing for a parcel
-  calculatePricing(parcelData: any): Observable<any> {
-    return this.http.post(`${this.apiUrl}/calculate-pricing`, parcelData);
+  // Calculate pricing
+  calculatePricing(pickupAddressId: string, deliveryAddressId: string, weight: number): Observable<any> {
+    return this.http.post(`${this.apiUrl}/calculate-pricing`, {
+      pickupAddressId,
+      deliveryAddressId,
+      weight
+    });
   }
 
-  // Get parcel pricing
-  getParcelPricing(parcelId: string): Observable<any> {
-    return this.http.get(`${this.apiUrl}/${parcelId}/pricing`);
-  }
-
-  // Get parcels by user (sent/received)
-  getParcelsByUser(userId: string): Observable<Parcel[]> {
-    return this.http.get<any>(`${this.apiUrl}?senderId=${userId}&receiverId=${userId}`).pipe(
-      map(response => response.parcels || [])
-    );
-  }
-
-  // Get parcels sent by user
-  getParcelsSentByUser(userId: string): Observable<Parcel[]> {
-    return this.http.get<any>(`${this.apiUrl}?senderId=${userId}`).pipe(
-      map(response => response.parcels || [])
-    );
-  }
-
-  // Get parcels received by user
-  getParcelsReceivedByUser(userId: string): Observable<Parcel[]> {
-    return this.http.get<any>(`${this.apiUrl}?receiverId=${userId}`).pipe(
-      map(response => response.parcels || [])
-    );
-  }
-
-  // Get parcels assigned to courier
-  getParcelsByCourier(courierId: string): Observable<Parcel[]> {
-    return this.http.get<any>(`${this.apiUrl}?assignedCourierId=${courierId}`).pipe(
-      map(response => response.parcels || [])
-    );
-  }
-
-  // Track parcel by ID
-  trackParcel(parcelId: string): Observable<Parcel> {
-    return this.http.get<Parcel>(`${this.apiUrl}/${parcelId}`);
+  // Get parcel with pricing
+  getParcelWithPricing(id: string): Observable<any> {
+    return this.http.get(`${this.apiUrl}/${id}/pricing`);
   }
 
   // Public tracking by tracking code (no authentication required)
   trackParcelByCode(trackingCode: string): Observable<Parcel> {
-    return this.http.get<Parcel>(`http://localhost:3000/tracking/${trackingCode}`);
+    return this.http.get<Parcel>(`${environment.apiUrl}/tracking/${trackingCode}`);
   }
 }
