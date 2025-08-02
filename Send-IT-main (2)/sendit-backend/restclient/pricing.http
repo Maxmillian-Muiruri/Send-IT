@@ -1,0 +1,238 @@
+### Pricing Service Tests - Updated with Real Values
+
+# Variables - Real values from successful tests
+@baseUrl = http://localhost:3000
+
+# Admin Token (for admin operations)
+@adminToken = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJkY2YzZDBmZS0zMzExLTQ5NGUtYjJhOC1mNzI1Yzg1Nzg3MjYiLCJlbWFpbCI6ImFkbWluQHNlbmRpdC5jb20iLCJyb2xlIjoiQURNSU4iLCJpYXQiOjE3NTM1NjU3MTgsImV4cCI6MTc1MzY1MjExOH0.38hWsAxVxhg3J0pHrAcmeN-NZlxTcr36DDSzADnbsOo
+
+# User Token (for parcel operations)
+@userToken = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI5MWZmMjAxZS1kMGE5LTRhMDYtOTMzNy1kMTI3MmFhMTg3NTgiLCJlbWFpbCI6ImpvaG4uZG9lQGV4YW1wbGUuY29tIiwicm9sZSI6IlVTRVIiLCJpYXQiOjE3NTM1NjU5NTMsImV4cCI6MTc1MzY1MjM1M30.2tAUHJFv7HM2TZlRZdO7rLmieJL7cmtefDwr2LsSbmA
+
+# Real Address IDs from our tests
+@pickupAddressId = 54effe99-ed29-43fa-9c6b-815f9cf9be98
+@deliveryAddressId = a6f433bc-2fcc-43f6-ac85-cc06ad14fc8c
+
+# Real User IDs
+@adminUserId = dcf3d0fe-3311-494e-b2a8-f725c8578726
+@regularUserId = 91ff201e-d0a9-4a06-9337-d1272aa18758
+
+# Real Parcel ID from our test
+@testParcelId = 31af2785-08ef-40de-bb18-bda69c3a77d0
+
+### 1. Calculate Pricing for Parcel - Express + Insurance
+POST {{baseUrl}}/parcel/calculate-pricing
+Authorization: Bearer {{userToken}}
+Content-Type: application/json
+
+{
+  "pickupAddressId": "{{pickupAddressId}}",
+  "deliveryAddressId": "{{deliveryAddressId}}",
+  "weight": 2.5,
+  "express": true,
+  "insuranceValue": 500
+}
+
+### 2. Calculate Pricing - Standard Delivery
+POST {{baseUrl}}/parcel/calculate-pricing
+Authorization: Bearer {{userToken}}
+Content-Type: application/json
+
+{
+  "pickupAddressId": "{{pickupAddressId}}",
+  "deliveryAddressId": "{{deliveryAddressId}}",
+  "weight": 1.0
+}
+
+### 3. Calculate Pricing - Heavy Parcel
+POST {{baseUrl}}/parcel/calculate-pricing
+Authorization: Bearer {{userToken}}
+Content-Type: application/json
+
+{
+  "pickupAddressId": "{{pickupAddressId}}",
+  "deliveryAddressId": "{{deliveryAddressId}}",
+  "weight": 10.0,
+  "insuranceValue": 1000
+}
+
+### 4. Get Parcel with Pricing Breakdown
+GET {{baseUrl}}/parcel/{{testParcelId}}/pricing
+Authorization: Bearer {{userToken}}
+
+### 5. Create Parcel with Automatic Pricing
+POST {{baseUrl}}/parcel
+Authorization: Bearer {{userToken}}
+Content-Type: application/json
+
+{
+  "senderId": "{{regularUserId}}",
+  "receiverId": "{{regularUserId}}",
+  "description": "Electronics package with automatic pricing",
+  "weight": 3.5,
+  "pickupAddressId": "{{pickupAddressId}}",
+  "deliveryAddressId": "{{deliveryAddressId}}"
+}
+
+### 6. Test Geocoding Service - Forward Geocoding
+POST {{baseUrl}}/geocoding/forward
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "address": "123 Main Street, New York, NY, USA"
+}
+
+### 7. Test Geocoding Service - Reverse Geocoding
+GET {{baseUrl}}/geocoding/reverse?lat=40.7128&lng=-74.0060
+Authorization: Bearer {{adminToken}}
+
+### 8. Test Distance Calculation - NY to LA
+GET {{baseUrl}}/geocoding/distance?lat1=40.7128&lng1=-74.0060&lat2=34.0522&lng2=-118.2437
+Authorization: Bearer {{adminToken}}
+
+### 9. Test Distance Calculation - Using Real Address Coordinates
+GET {{baseUrl}}/geocoding/distance?lat1=41.0154948&lng1=-73.874774&lat2=33.925949&lng2=-118.413685
+Authorization: Bearer {{adminToken}}
+
+### 10. Test Nearby Locations
+GET {{baseUrl}}/geocoding/nearby?lat=40.7128&lng=-74.0060&radius=10
+Authorization: Bearer {{adminToken}}
+
+### 11. Test Address Validation
+POST {{baseUrl}}/geocoding/validate
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "address": "Invalid Address, Nowhere, ZZ"
+}
+
+### 12. Test Address Validation - Valid Address
+POST {{baseUrl}}/geocoding/validate
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "address": "123 Main Street, New York, NY, USA"
+}
+
+### 13. Create Additional Test Address - London
+POST {{baseUrl}}/address
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "line1": "10 Downing Street",
+  "city": "London",
+  "state": "England",
+  "country": "UK",
+  "postalCode": "SW1A 2AA"
+}
+
+### 14. Calculate International Pricing - NY to London
+POST {{baseUrl}}/parcel/calculate-pricing
+Authorization: Bearer {{userToken}}
+Content-Type: application/json
+
+{
+  "pickupAddressId": "{{pickupAddressId}}",
+  "deliveryAddressId": "{{$processEnv LONDON_ADDRESS_ID}}",
+  "weight": 5.0,
+  "express": true,
+  "insuranceValue": 2000
+}
+
+### 15. Test Different Weight Categories
+POST {{baseUrl}}/parcel/calculate-pricing
+Authorization: Bearer {{userToken}}
+Content-Type: application/json
+
+{
+  "pickupAddressId": "{{pickupAddressId}}",
+  "deliveryAddressId": "{{deliveryAddressId}}",
+  "weight": 0.5
+}
+
+### 16. Test Heavy Parcel with Express
+POST {{baseUrl}}/parcel/calculate-pricing
+Authorization: Bearer {{userToken}}
+Content-Type: application/json
+
+{
+  "pickupAddressId": "{{pickupAddressId}}",
+  "deliveryAddressId": "{{deliveryAddressId}}",
+  "weight": 25.0,
+  "express": true,
+  "insuranceValue": 5000
+}
+
+### 17. Test Local Delivery (Same City)
+POST {{baseUrl}}/parcel/calculate-pricing
+Authorization: Bearer {{userToken}}
+Content-Type: application/json
+
+{
+  "pickupAddressId": "{{pickupAddressId}}",
+  "deliveryAddressId": "{{pickupAddressId}}",
+  "weight": 1.0
+}
+
+### 18. Get All Parcels with Pricing Info
+GET {{baseUrl}}/parcel
+Authorization: Bearer {{userToken}}
+
+### 19. Test Address Creation with Automatic Geocoding
+POST {{baseUrl}}/address
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "line1": "1600 Pennsylvania Avenue NW",
+  "city": "Washington",
+  "state": "DC",
+  "country": "USA",
+  "postalCode": "20500"
+}
+
+### 20. Test Address Creation - Tokyo
+POST {{baseUrl}}/address
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "line1": "1-1-1 Shibuya",
+  "city": "Tokyo",
+  "state": "Tokyo",
+  "country": "Japan",
+  "postalCode": "150-0002"
+}
+
+### Expected Results Summary:
+
+### Test 1 - Express + Insurance (2.5kg, NY to LA):
+# Expected Total: ~$632.54
+# Breakdown: Base($5) + Weight($5) + Distance($396.48) + Fuel($20.32) + Insurance($2.5) + Express($203.24)
+
+### Test 2 - Standard Delivery (1.0kg, NY to LA):
+# Expected Total: ~$423.65
+# Breakdown: Base($5) + Weight($2) + Distance($396.48) + Fuel($20.17)
+
+### Test 3 - Heavy Parcel (10.0kg, NY to LA, $1000 insurance):
+# Expected Total: ~$1,000+
+# Breakdown: Base($5) + Weight($20) + Distance($396.48) + Fuel($21.07) + Insurance($5) + Express($220.33)
+
+### Test 4 - Parcel with Pricing Breakdown:
+# Should return the test parcel with detailed pricing breakdown
+
+### Test 5 - Automatic Pricing on Creation:
+# Should create parcel with automatic pricing calculation
+
+### Geocoding Tests:
+# Test 6: Should return coordinates for NY address
+# Test 7: Should return address for NY coordinates
+# Test 8: Should return ~3935km distance NY to LA
+# Test 9: Should return ~3965km using real address coordinates
+# Test 10: Should return nearby locations within 10km radius
+# Test 11: Should handle invalid address gracefully
+# Test 12: Should validate real address successfully 

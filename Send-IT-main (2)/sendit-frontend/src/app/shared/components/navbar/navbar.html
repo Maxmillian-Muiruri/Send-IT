@@ -1,0 +1,62 @@
+<nav class="navbar">
+  <div class="navbar-logo">
+    <span class="logo-icon">📦</span>
+    <span>SendIT</span>
+  </div>
+  <div class="navbar-links">
+    <a *ngIf="isLoggedIn" routerLink="/" routerLinkActive="active">Home</a>
+    <a *ngIf="isLoggedIn" routerLink="/user/dashboard" routerLinkActive="active"
+      >Dashboard</a
+    >
+    <a
+      *ngIf="isLoggedIn"
+      routerLink="/user/send-parcel"
+      routerLinkActive="active"
+      >Send Parcel</a
+    >
+    <a *ngIf="isLoggedIn" routerLink="/user/track" routerLinkActive="active"
+      >Track</a
+    >
+    <!-- <a *ngIf="isLoggedIn" routerLink="/user/history" routerLinkActive="active"
+      >History</a
+    > -->
+    <a *ngIf="isLoggedIn" routerLink="/user/profile" routerLinkActive="active"
+      >Profile</a
+    >
+    <!-- <a *ngIf="isLoggedIn" routerLink="/admin" routerLinkActive="active"
+      >Admin</a
+    > -->
+    <!-- <a *ngIf="isLoggedIn" routerLink="/courier" routerLinkActive="active"
+      >Courier</a
+    > -->
+    <a *ngIf="isLoggedIn" routerLink="/logout" routerLinkActive="active"
+      >Logout</a
+    >
+    <!-- <a *ngIf="!isLoggedIn" routerLink="/auth/login" routerLinkActive="active"
+      >Login</a
+    >
+    <a *ngIf="!isLoggedIn" routerLink="/auth/register" routerLinkActive="active"
+      >Register</a
+    >
+    <a *ngIf="isLoggedIn" routerLink="/contact" routerLinkActive="active"
+      >Contact</a
+    > -->
+  </div>
+  <button
+    class="notification-btn"
+    routerLink="/user/notifications"
+    title="Notifications"
+    style="
+      font-size: 1.5rem;
+      margin-left: 1.5rem;
+      background: none;
+      border: none;
+      cursor: pointer;
+    "
+  ></button>
+  <!-- Demo: Toggle login state -->
+  <button (click)="toggleLogin()" style="margin-left: 1rem">
+    Toggle to see full navbar
+  </button>
+  <a href="/user/notifications" routerLinkActive="active">🔔</a>
+</nav>

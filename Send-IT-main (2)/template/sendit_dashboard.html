@@ -1,0 +1,722 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SendIT Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: #f8f9fa;
+            color: #333;
+        }
+
+        .container {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 220px;
+            background-color: #ffffff;
+            border-right: 1px solid #e5e7eb;
+            padding: 20px 0;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            padding: 0 20px 30px;
+            margin-bottom: 20px;
+        }
+
+        .logo-icon {
+            width: 32px;
+            height: 32px;
+            background-color: #1f2937;
+            border-radius: 8px;
+            margin-right: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+        }
+
+        .logo-icon svg {
+            width: 20px;
+            height: 20px;
+            fill: white;
+        }
+
+        .logo-text {
+            font-size: 18px;
+            font-weight: 600;
+            color: #1f2937;
+        }
+
+        .nav-menu {
+            list-style: none;
+        }
+
+        .nav-item {
+            margin-bottom: 2px;
+        }
+
+        .nav-link {
+            display: flex;
+            align-items: center;
+            padding: 12px 20px;
+            color: #6b7280;
+            text-decoration: none;
+            transition: all 0.2s;
+        }
+
+        .nav-link:hover {
+            background-color: #f3f4f6;
+            color: #1f2937;
+        }
+
+        .nav-link.active {
+            background-color: #f3f4f6;
+            color: #1f2937;
+            font-weight: 500;
+        }
+
+        .nav-icon {
+            width: 20px;
+            height: 20px;
+            margin-right: 12px;
+            fill: currentColor;
+        }
+
+        .logout-section {
+            margin-top: auto;
+            padding-top: 20px;
+            border-top: 1px solid #e5e7eb;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            padding: 30px;
+        }
+
+        .header {
+            display: flex;
+            justify-content: between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+
+        .header-left h1 {
+            font-size: 24px;
+            font-weight: 600;
+            color: #1f2937;
+            margin-bottom: 4px;
+        }
+
+        .header-left p {
+            color: #6b7280;
+            font-size: 14px;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            margin-left: auto;
+        }
+
+        .notification-icon {
+            width: 24px;
+            height: 24px;
+            margin-right: 16px;
+            cursor: pointer;
+        }
+
+        .user-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background-color: #e5e7eb;
+            margin-right: 8px;
+        }
+
+        .user-details {
+            font-size: 14px;
+        }
+
+        .user-name {
+            font-weight: 500;
+            color: #1f2937;
+        }
+
+        .user-email {
+            color: #6b7280;
+        }
+
+        /* Stats Cards */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 24px;
+            border-radius: 8px;
+            border: 1px solid #e5e7eb;
+        }
+
+        .stat-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .stat-title {
+            font-size: 14px;
+            color: #6b7280;
+            font-weight: 500;
+        }
+
+        .stat-icon {
+            width: 24px;
+            height: 24px;
+            color: #6b7280;
+        }
+
+        .stat-number {
+            font-size: 32px;
+            font-weight: 700;
+            color: #1f2937;
+            margin-bottom: 8px;
+        }
+
+        .stat-change {
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+        }
+
+        .stat-change.positive {
+            color: #059669;
+        }
+
+        .stat-change.negative {
+            color: #dc2626;
+        }
+
+        .change-arrow {
+            margin-right: 4px;
+        }
+
+        /* Recent Activity Section */
+        .activity-section {
+            background: white;
+            border-radius: 8px;
+            border: 1px solid #e5e7eb;
+            overflow: hidden;
+        }
+
+        .activity-header {
+            padding: 24px 24px 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .activity-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #1f2937;
+        }
+
+        .search-container {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .search-input {
+            padding: 8px 12px;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            font-size: 14px;
+            width: 200px;
+        }
+
+        .new-parcel-btn {
+            background-color: #1f2937;
+            color: white;
+            padding: 8px 16px;
+            border: none;
+            border-radius: 6px;
+            font-size: 14px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .new-parcel-btn:hover {
+            background-color: #374151;
+        }
+
+        /* Table */
+        .table-container {
+            overflow-x: auto;
+        }
+
+        .activity-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .activity-table th {
+            background-color: #f9fafb;
+            padding: 12px 24px;
+            text-align: left;
+            font-size: 12px;
+            font-weight: 500;
+            color: #6b7280;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .activity-table td {
+            padding: 16px 24px;
+            border-bottom: 1px solid #f3f4f6;
+            font-size: 14px;
+        }
+
+        .tracking-id {
+            font-weight: 500;
+            color: #1f2937;
+        }
+
+        .recipient {
+            color: #1f2937;
+        }
+
+        .status {
+            padding: 4px 12px;
+            border-radius: 16px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .status.delivered {
+            background-color: #d1fae5;
+            color: #065f46;
+        }
+
+        .status.in-transit {
+            background-color: #fef3c7;
+            color: #92400e;
+        }
+
+        .status.processing {
+            background-color: #e0e7ff;
+            color: #3730a3;
+        }
+
+        .date {
+            color: #6b7280;
+        }
+
+        .actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .action-btn {
+            color: #6b7280;
+            text-decoration: none;
+            font-size: 14px;
+            padding: 4px 8px;
+            border-radius: 4px;
+            transition: color 0.2s;
+        }
+
+        .action-btn:hover {
+            color: #1f2937;
+            background-color: #f3f4f6;
+        }
+
+        /* Pagination */
+        .pagination {
+            padding: 20px 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-top: 1px solid #e5e7eb;
+        }
+
+        .pagination-info {
+            font-size: 14px;
+            color: #6b7280;
+        }
+
+        .pagination-controls {
+            display: flex;
+            gap: 8px;
+        }
+
+        .pagination-btn {
+            padding: 8px 12px;
+            border: 1px solid #d1d5db;
+            background: white;
+            color: #374151;
+            text-decoration: none;
+            border-radius: 6px;
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+
+        .pagination-btn:hover {
+            background-color: #f9fafb;
+        }
+
+        .pagination-btn.active {
+            background-color: #1f2937;
+            color: white;
+            border-color: #1f2937;
+        }
+
+        .pagination-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        /* Footer */
+        .footer {
+            text-align: center;
+            padding: 40px 30px 30px;
+            border-top: 1px solid #e5e7eb;
+            margin-top: 40px;
+        }
+
+        .footer-logo {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 8px;
+        }
+
+        .footer-logo-icon {
+            width: 24px;
+            height: 24px;
+            background-color: #6b7280;
+            border-radius: 4px;
+            margin-right: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .footer-logo-icon svg {
+            width: 16px;
+            height: 16px;
+            fill: white;
+        }
+
+        .footer-text {
+            font-size: 14px;
+            color: #6b7280;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <div class="logo">
+                <div class="logo-icon">
+                    <svg viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M20 8h-3V4H3c-1.1 0-2 .9-2 2v11h2c0 1.66 1.34 3 3 3s3-1.34 3-3h6c0 1.66 1.34 3 3 3s3-1.34 3-3h2v-5l-3-4zM6 18.5c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zm13.5-9l1.96 2.5H17V9.5h2.5zm-1.5 9c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"/>
+                    </svg>
+                </div>
+                <div class="logo-text">SendIT</div>
+            </div>
+            
+            <ul class="nav-menu">
+                <li class="nav-item">
+                    <a href="#" class="nav-link active">
+                        <svg class="nav-icon" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z"/>
+                        </svg>
+                        Dashboard
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#" class="nav-link">
+                        <svg class="nav-icon" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 14l-4-4h3V9h2v4h3l-4 4z"/>
+                        </svg>
+                        Sent Parcels
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#" class="nav-link">
+                        <svg class="nav-icon" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 14l4-4h-3V9h-2v4H8l4 4z"/>
+                        </svg>
+                        Received Parcels
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#" class="nav-link">
+                        <svg class="nav-icon" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+                        </svg>
+                        Profile
+                    </a>
+                </li>
+            </ul>
+            
+            <div class="logout-section">
+                <ul class="nav-menu">
+                    <li class="nav-item">
+                        <a href="#" class="nav-link">
+                            <svg class="nav-icon" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M17 7l-1.41 1.41L18.17 11H8v2h10.17l-2.58 2.59L17 17l5-5zM4 5h8V3H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h8v-2H4V5z"/>
+                            </svg>
+                            Logout
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <!-- Header -->
+            <div class="header">
+                <div class="header-left">
+                    <h1>Dashboard</h1>
+                    <p>Welcome back, manage your parcels</p>
+                </div>
+                <div class="user-info">
+                    <svg class="notification-icon" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zm6-6v-5c0-3.07-1.64-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.63 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z"/>
+                    </svg>
+                    <div class="user-avatar"></div>
+                    <div class="user-details">
+                        <div class="user-name">John Doe</div>
+                        <div class="user-email">john@example.com</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Stats Grid -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-header">
+                        <div class="stat-title">Parcels Sent</div>
+                        <svg class="stat-icon" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/>
+                        </svg>
+                    </div>
+                    <div class="stat-number">24</div>
+                    <div class="stat-change positive">
+                        <span class="change-arrow">↑</span>
+                        +12% from last month
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-header">
+                        <div class="stat-title">Parcels Received</div>
+                        <svg class="stat-icon" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M19 7h-8v6h8V7zm0-4H9C7.9 3 7 3.9 7 5v14c0 1.1.9 2 2 2h10c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-1 16H10V7h8v12z"/>
+                        </svg>
+                    </div>
+                    <div class="stat-number">18</div>
+                    <div class="stat-change positive">
+                        <span class="change-arrow">↑</span>
+                        +8% from last month
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-header">
+                        <div class="stat-title">Active Deliveries</div>
+                        <svg class="stat-icon" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M20 8h-3V4H3c-1.1 0-2 .9-2 2v11h2c0 1.66 1.34 3 3 3s3-1.34 3-3h6c0 1.66 1.34 3 3 3s3-1.34 3-3h2v-5l-3-4zM6 18.5c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zm13.5-9l1.96 2.5H17V9.5h2.5zm-1.5 9c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"/>
+                        </svg>
+                    </div>
+                    <div class="stat-number">7</div>
+                    <div class="stat-change negative">
+                        <span class="change-arrow">↓</span>
+                        -3% from last month
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recent Activity Section -->
+            <div class="activity-section">
+                <div class="activity-header">
+                    <h2 class="activity-title">Recent Activity</h2>
+                    <div class="search-container">
+                        <input type="text" class="search-input" placeholder="Search parcels...">
+                        <button class="new-parcel-btn">
+                            <span>+</span>
+                            New Parcel
+                        </button>
+                    </div>
+                </div>
+
+                <div class="table-container">
+                    <table class="activity-table">
+                        <thead>
+                            <tr>
+                                <th>Tracking ID</th>
+                                <th>Recipient</th>
+                                <th>Status</th>
+                                <th>Date</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td class="tracking-id">#SIT001234</td>
+                                <td class="recipient">Alice Johnson</td>
+                                <td><span class="status delivered">Delivered</span></td>
+                                <td class="date">Jan 15, 2025</td>
+                                <td class="actions">
+                                    <a href="#" class="action-btn">View</a>
+                                    <a href="#" class="action-btn">Track</a>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="tracking-id">#SIT001235</td>
+                                <td class="recipient">Bob Smith</td>
+                                <td><span class="status in-transit">In Transit</span></td>
+                                <td class="date">Jan 14, 2025</td>
+                                <td class="actions">
+                                    <a href="#" class="action-btn">View</a>
+                                    <a href="#" class="action-btn">Track</a>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="tracking-id">#SIT001236</td>
+                                <td class="recipient">Carol Davis</td>
+                                <td><span class="status processing">Processing</span></td>
+                                <td class="date">Jan 13, 2025</td>
+                                <td class="actions">
+                                    <a href="#" class="action-btn">View</a>
+                                    <a href="#" class="action-btn">Track</a>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="pagination">
+                    <div class="pagination-info">
+                        Showing 1 to 3 of 24 results
+                    </div>
+                    <div class="pagination-controls">
+                        <button class="pagination-btn" disabled>Previous</button>
+                        <a href="#" class="pagination-btn active">1</a>
+                        <a href="#" class="pagination-btn">2</a>
+                        <a href="#" class="pagination-btn">3</a>
+                        <a href="#" class="pagination-btn">Next</a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Footer -->
+            <div class="footer">
+                <div class="footer-logo">
+                    <div class="footer-logo-icon">
+                        <svg viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M20 8h-3V4H3c-1.1 0-2 .9-2 2v11h2c0 1.66 1.34 3 3 3s3-1.34 3-3h6c0 1.66 1.34 3 3 3s3-1.34 3-3h2v-5l-3-4zM6 18.5c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zm13.5-9l1.96 2.5H17V9.5h2.5zm-1.5 9c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"/>
+                        </svg>
+                    </div>
+                    <span class="footer-text"><strong>SendIT</strong></span>
+                </div>
+                <div class="footer-text">© 2025 SendIT. All rights reserved.</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Simple interactive functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            // Search functionality
+            const searchInput = document.querySelector('.search-input');
+            const tableRows = document.querySelectorAll('.activity-table tbody tr');
+            
+            searchInput.addEventListener('input', function() {
+                const searchTerm = this.value.toLowerCase();
+                
+                tableRows.forEach(row => {
+                    const text = row.textContent.toLowerCase();
+                    if (text.includes(searchTerm)) {
+                        row.style.display = '';
+                    } else {
+                        row.style.display = 'none';
+                    }
+                });
+            });
+
+            // New Parcel button click
+            const newParcelBtn = document.querySelector('.new-parcel-btn');
+            newParcelBtn.addEventListener('click', function() {
+                alert('New Parcel functionality would open here');
+            });
+
+            // Action buttons
+            const actionButtons = document.querySelectorAll('.action-btn');
+            actionButtons.forEach(btn => {
+                btn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const action = this.textContent;
+                    const row = this.closest('tr');
+                    const trackingId = row.querySelector('.tracking-id').textContent;
+                    alert(`${action} action for ${trackingId}`);
+                });
+            });
+
+            // Navigation links
+            const navLinks = document.querySelectorAll('.nav-link');
+            navLinks.forEach(link => {
+                link.addEventListener('click', function(e) {
+                    if (this.textContent.trim() !== 'Logout') {
+                        e.preventDefault();
+                        // Remove active class from all links
+                        navLinks.forEach(l => l.classList.remove('active'));
+                        // Add active class to clicked link
+                        this.classList.add('active');
+                    }
+                });
+            });
+
+            // Pagination
+            const paginationBtns = document.querySelectorAll('.pagination-btn:not([disabled])');
+            paginationBtns.forEach(btn => {
+                btn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    if (!this.classList.contains('active')) {
+                        document.querySelector('.pagination-btn.active').classList.remove('active');
+                        this.classList.add('active');
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>

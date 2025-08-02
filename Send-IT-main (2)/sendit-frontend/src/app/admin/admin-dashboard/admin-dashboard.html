@@ -1,0 +1,829 @@
+<div class="container">
+  <!-- Sidebar -->
+  <div class="sidebar">
+    <div class="sidebar-header">
+      <div class="sidebar-logo"></div>
+      <h2>SendIT Admin</h2>
+    </div>
+    <ul class="sidebar-menu">
+      <li>
+        <a
+          routerLink="/admin"
+          [ngClass]="{active: activeMenu === 'dashboard'}"
+          (click)="setActiveMenu('dashboard')"
+          ><span class="icon icon-dashboard"></span> Home</a
+        >
+      </li>
+      <li>
+        <a
+          [ngClass]="{active: activeMenu === 'parcels'}"
+          (click)="scrollToSection('parcels-section', 'parcels', $event)"
+          ><span class="icon icon-parcels"></span> Manage Parcels</a
+        >
+      </li>
+      <li>
+        <a
+          [ngClass]="{active: activeMenu === 'users'}"
+          (click)="scrollToSection('users-section', 'users', $event)"
+          ><span class="icon icon-users"></span> Users</a
+        >
+      </li>
+      <li>
+        <a
+          [ngClass]="{active: activeMenu === 'couriers'}"
+          (click)="scrollToSection('couriers-section', 'couriers', $event)"
+          ><span class="icon icon-couriers"></span> Couriers</a
+        >
+      </li>
+      <li>
+        <a (click)="logout(); $event.preventDefault()"
+          ><span class="icon icon-logout"></span> Logout</a
+        >
+      </li>
+    </ul>
+  </div>
+
+  <!-- Main Content -->
+  <div class="main-content">
+    <div class="header">
+      <h1>Admin Dashboard</h1>
+      <div class="header-actions">
+        <a routerLink="/admin/analytics" class="btn btn-secondary"
+          >📊 Analytics</a
+        >
+        <div class="notification-icon" (click)="openNotificationsModal()">
+          <span class="notification-emoji" title="Notifications">🔔</span>
+          <span *ngIf="unreadCount > 0" class="notification-badge"
+            >{{ unreadCount }}</span
+          >
+        </div>
+        <!-- <button class="btn btn-primary" (click)="openAddParcelModal()">
+          Add Parcel
+        </button>
+        <button class="btn btn-secondary" (click)="openAddUserModal()">
+          Add User
+        </button> -->
+        <button class="btn btn-secondary" (click)="openAddCourierModal()">
+          Add Courier
+        </button>
+      </div>
+    </div>
+
+    <div class="content">
+      <!-- Stats Cards -->
+      <div class="stats-container">
+        <div class="stat-card">
+          <div class="stat-info">
+            <h3>{{ stats.totalParcels }}</h3>
+            <p>Total Parcels</p>
+          </div>
+          <div class="stat-icon parcel-icon"></div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-info">
+            <h3>{{ stats.delivered }}</h3>
+            <p>Delivered</p>
+          </div>
+          <div class="stat-icon delivered-icon"></div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-info">
+            <h3>{{ stats.inTransit }}</h3>
+            <p>In Transit</p>
+          </div>
+          <div class="stat-icon intransit-icon"></div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-info">
+            <h3>{{ stats.pending }}</h3>
+            <p>Pending</p>
+          </div>
+          <div class="stat-icon pending-icon"></div>
+        </div>
+      </div>
+
+      <!-- Parcels Section -->
+      <div class="section" id="parcels-section">
+        <div class="section-header">
+          <h2>Recent Parcels</h2>
+        </div>
+
+        <div *ngIf="loadingParcels" class="loading-spinner">
+          Loading parcels...
+        </div>
+        <div *ngIf="errorParcels" class="error-message">{{ errorParcels }}</div>
+
+        <div class="table-container" *ngIf="!loadingParcels && !errorParcels">
+          <table>
+            <thead>
+              <tr>
+                <th>Tracking Code</th>
+                <th>Sender</th>
+                <th>Receiver</th>
+                <th>Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let parcel of parcels.slice(0, 10)">
+                <td>{{ parcel.trackingCode }}</td>
+                <td>{{ parcel.sender?.name || parcel.senderEmail }}</td>
+                <td>{{ parcel.receiver?.name || parcel.receiverEmail }}</td>
+                <td>
+                  <select
+                    class="status-select"
+                    [ngClass]="statusClass(parcel.status)"
+                    [(ngModel)]="parcel.status"
+                    (change)="updateStatus(parcel)"
+                  >
+                    <option value="PENDING">Pending</option>
+                    <option value="PICKED_UP">Picked Up</option>
+                    <option value="IN_TRANSIT">In Transit</option>
+                    <option value="OUT_FOR_DELIVERY">Out for Delivery</option>
+                    <option value="DELIVERED">Delivered</option>
+                    <option value="CANCELLED">Cancelled</option>
+                  </select>
+                </td>
+                <td>
+                  <button
+                    class="btn btn-small"
+                    (click)="openEditParcelModal(parcel)"
+                  >
+                    Edit
+                  </button>
+                  <button
+                    class="btn btn-small btn-secondary"
+                    (click)="openAssignModal(parcel)"
+                  >
+                    Assign
+                  </button>
+                  <button
+                    class="btn btn-small btn-danger"
+                    (click)="deleteParcel(parcel.id)"
+                  >
+                    Delete
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Users Section -->
+      <div class="section" id="users-section">
+        <div class="section-header">
+          <h2>Users</h2>
+        </div>
+
+        <div *ngIf="loadingUsers" class="loading-spinner">Loading users...</div>
+        <div *ngIf="errorUsers" class="error-message">{{ errorUsers }}</div>
+
+        <div class="table-container" *ngIf="!loadingUsers && !errorUsers">
+          <table>
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Role</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let user of users">
+                <td>{{ user.id }}</td>
+                <td>{{ user.name }}</td>
+                <td>{{ user.email }}</td>
+                <td>{{ user.role }}</td>
+                <td>
+                  <button
+                    class="btn btn-small"
+                    (click)="openEditUserModal(user)"
+                  >
+                    Edit
+                  </button>
+                  <button
+                    class="btn btn-small btn-danger"
+                    (click)="deleteUser(user.id)"
+                  >
+                    Delete
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Couriers Section -->
+      <div class="section" id="couriers-section">
+        <div class="section-header">
+          <h2>Couriers</h2>
+        </div>
+
+        <div *ngIf="loadingCouriers" class="loading-spinner">
+          Loading couriers...
+        </div>
+        <div *ngIf="errorCouriers" class="error-message">
+          {{ errorCouriers }}
+        </div>
+
+        <div class="table-container" *ngIf="!loadingCouriers && !errorCouriers">
+          <table>
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Vehicle</th>
+                <th>Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let courier of couriers">
+                <td>{{ courier.id }}</td>
+                <td>{{ courier.user?.name || 'N/A' }}</td>
+                <td>{{ courier.user?.email || 'N/A' }}</td>
+                <td>{{ courier.vehicleType }} - {{ courier.licensePlate }}</td>
+                <td>
+                  <span
+                    class="status-badge"
+                    [ngClass]="statusClass(courier.status)"
+                  >
+                    {{ courier.status }}
+                  </span>
+                </td>
+                <td>
+                  <button
+                    class="btn btn-small"
+                    (click)="openEditCourierModal(courier)"
+                  >
+                    Edit
+                  </button>
+                  <button
+                    class="btn btn-small btn-danger"
+                    (click)="deleteCourier(courier.id)"
+                  >
+                    Delete
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Add Parcel Modal -->
+<div
+  class="modal-overlay"
+  *ngIf="showAddParcelModal"
+  (click)="showAddParcelModal = false"
+>
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3>Add New Parcel</h3>
+      <button class="close-btn" (click)="showAddParcelModal = false">
+        &times;
+      </button>
+    </div>
+    <div class="modal-body">
+      <form [formGroup]="parcelForm" (ngSubmit)="createParcel()">
+        <div class="form-group">
+          <label>Receiver Email</label>
+          <input
+            type="email"
+            formControlName="receiverEmail"
+            placeholder="Receiver email"
+          />
+        </div>
+        <div class="form-group">
+          <label>Receiver Name</label>
+          <input
+            type="text"
+            formControlName="receiverName"
+            placeholder="Receiver name"
+          />
+        </div>
+        <div class="form-group">
+          <label>Receiver Phone</label>
+          <input
+            type="tel"
+            formControlName="receiverPhone"
+            placeholder="Receiver phone"
+          />
+        </div>
+        <div class="form-group">
+          <label>Weight (kg)</label>
+          <input
+            type="number"
+            formControlName="weight"
+            step="0.1"
+            min="0.1"
+            placeholder="Weight"
+          />
+        </div>
+        <div class="form-group">
+          <label>Description</label>
+          <textarea
+            formControlName="description"
+            placeholder="Parcel description"
+            rows="3"
+          ></textarea>
+        </div>
+        <div class="form-group">
+          <label>Pickup Location</label>
+          <input
+            type="text"
+            formControlName="pickupLocation"
+            placeholder="Pickup address"
+          />
+        </div>
+        <div class="form-group">
+          <label>Destination</label>
+          <input
+            type="text"
+            formControlName="destination"
+            placeholder="Delivery address"
+          />
+        </div>
+        <div class="form-actions">
+          <button
+            type="submit"
+            class="btn btn-primary"
+            [disabled]="parcelForm.invalid"
+          >
+            Create Parcel
+          </button>
+          <button
+            type="button"
+            class="btn btn-secondary"
+            (click)="showAddParcelModal = false"
+          >
+            Cancel
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Edit Parcel Modal -->
+<div
+  class="modal-overlay"
+  *ngIf="showEditParcelModal"
+  (click)="showEditParcelModal = false"
+>
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3>Edit Parcel</h3>
+      <button class="close-btn" (click)="showEditParcelModal = false">
+        &times;
+      </button>
+    </div>
+    <div class="modal-body">
+      <form [formGroup]="parcelForm" (ngSubmit)="updateParcel()">
+        <div class="form-group">
+          <label>Description</label>
+          <textarea
+            formControlName="description"
+            placeholder="Parcel description"
+            rows="3"
+          ></textarea>
+        </div>
+        <div class="form-group">
+          <label>Weight (kg)</label>
+          <input
+            type="number"
+            formControlName="weight"
+            step="0.1"
+            min="0.1"
+            placeholder="Weight"
+          />
+        </div>
+        <div class="form-actions">
+          <button
+            type="submit"
+            class="btn btn-primary"
+            [disabled]="parcelForm.invalid"
+          >
+            Update Parcel
+          </button>
+          <button
+            type="button"
+            class="btn btn-secondary"
+            (click)="showEditParcelModal = false"
+          >
+            Cancel
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Assign Parcel Modal -->
+<div
+  class="modal-overlay"
+  *ngIf="showAssignModal"
+  (click)="showAssignModal = false"
+>
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3>Assign Parcel to Courier</h3>
+      <button class="close-btn" (click)="showAssignModal = false">
+        &times;
+      </button>
+    </div>
+    <div class="modal-body">
+      <form (ngSubmit)="assignParcel()">
+        <div class="form-group">
+          <label>Select Courier</label>
+          <select [(ngModel)]="selectedCourierId" name="courier" required>
+            <option value="">Choose a courier...</option>
+            <option *ngFor="let courier of couriers" [value]="courier.id">
+              {{ courier.user?.name || 'N/A' }} - {{ courier.vehicleType }}
+            </option>
+          </select>
+        </div>
+        <div class="form-actions">
+          <button
+            type="submit"
+            class="btn btn-primary"
+            [disabled]="!selectedCourierId || assigningParcel"
+          >
+            <span *ngIf="!assigningParcel">Assign Parcel</span>
+            <span *ngIf="assigningParcel">
+              <span class="spinner"></span>
+              Assigning...
+            </span>
+          </button>
+          <button
+            type="button"
+            class="btn btn-secondary"
+            (click)="showAssignModal = false"
+            [disabled]="assigningParcel"
+          >
+            Cancel
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Add User Modal -->
+<div
+  class="modal-overlay"
+  *ngIf="showAddUserModal"
+  (click)="showAddUserModal = false"
+>
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3>Add New User</h3>
+      <button class="close-btn" (click)="showAddUserModal = false">
+        &times;
+      </button>
+    </div>
+    <div class="modal-body">
+      <form [formGroup]="userForm" (ngSubmit)="createUser()">
+        <div class="form-group">
+          <label>Name</label>
+          <input type="text" formControlName="name" placeholder="Full name" />
+        </div>
+        <div class="form-group">
+          <label>Email</label>
+          <input
+            type="email"
+            formControlName="email"
+            placeholder="Email address"
+          />
+        </div>
+        <div class="form-group">
+          <label>Phone (Optional)</label>
+          <input
+            type="tel"
+            formControlName="phone"
+            placeholder="Phone number"
+          />
+        </div>
+        <div class="form-group">
+          <label>Role</label>
+          <select formControlName="role">
+            <option value="USER">User</option>
+            <option value="ADMIN">Admin</option>
+            <option value="COURIER">Courier</option>
+          </select>
+        </div>
+        <div class="form-actions">
+          <button
+            type="submit"
+            class="btn btn-primary"
+            [disabled]="userForm.invalid"
+          >
+            Create User
+          </button>
+          <button
+            type="button"
+            class="btn btn-secondary"
+            (click)="showAddUserModal = false"
+          >
+            Cancel
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Edit User Modal -->
+<div
+  class="modal-overlay"
+  *ngIf="showEditUserModal"
+  (click)="showEditUserModal = false"
+>
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3>Edit User</h3>
+      <button class="close-btn" (click)="showEditUserModal = false">
+        &times;
+      </button>
+    </div>
+    <div class="modal-body">
+      <form [formGroup]="userForm" (ngSubmit)="updateUser()">
+        <div class="form-group">
+          <label>Name</label>
+          <input type="text" formControlName="name" placeholder="Full name" />
+        </div>
+        <div class="form-group">
+          <label>Email</label>
+          <input
+            type="email"
+            formControlName="email"
+            placeholder="Email address"
+          />
+        </div>
+        <div class="form-group">
+          <label>Phone (Optional)</label>
+          <input
+            type="tel"
+            formControlName="phone"
+            placeholder="Phone number"
+          />
+        </div>
+        <div class="form-group">
+          <label>Role</label>
+          <select formControlName="role">
+            <option value="USER">User</option>
+            <option value="ADMIN">Admin</option>
+            <option value="COURIER">Courier</option>
+          </select>
+        </div>
+        <div class="form-actions">
+          <button
+            type="submit"
+            class="btn btn-primary"
+            [disabled]="userForm.invalid"
+          >
+            Update User
+          </button>
+          <button
+            type="button"
+            class="btn btn-secondary"
+            (click)="showEditUserModal = false"
+          >
+            Cancel
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Add Courier Modal -->
+<div
+  class="modal-overlay"
+  *ngIf="showAddCourierModal"
+  (click)="showAddCourierModal = false"
+>
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3>Add New Courier</h3>
+      <button class="close-btn" (click)="showAddCourierModal = false">
+        &times;
+      </button>
+    </div>
+    <div class="modal-body">
+      <form [formGroup]="courierForm" (ngSubmit)="createCourier()">
+        <div class="form-group">
+          <label>Name</label>
+          <input type="text" formControlName="name" placeholder="Full name" />
+        </div>
+        <div class="form-group">
+          <label>Email</label>
+          <input
+            type="email"
+            formControlName="email"
+            placeholder="Email address"
+          />
+        </div>
+        <div class="form-group">
+          <label>Phone</label>
+          <input
+            type="tel"
+            formControlName="phone"
+            placeholder="Phone number"
+          />
+        </div>
+        <div class="form-group">
+          <label>Vehicle Type</label>
+          <select formControlName="vehicleType">
+            <option value="MOTORCYCLE">Motorcycle</option>
+            <option value="CAR">Car</option>
+            <option value="VAN">Van</option>
+            <option value="TRUCK">Truck</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>License Plate</label>
+          <input
+            type="text"
+            formControlName="licensePlate"
+            placeholder="License plate number"
+          />
+        </div>
+        <div class="form-actions">
+          <button
+            type="submit"
+            class="btn btn-primary"
+            [disabled]="courierForm.invalid"
+          >
+            Create Courier
+          </button>
+          <button
+            type="button"
+            class="btn btn-secondary"
+            (click)="showAddCourierModal = false"
+          >
+            Cancel
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Edit Courier Modal -->
+<div
+  class="modal-overlay"
+  *ngIf="showEditCourierModal"
+  (click)="showEditCourierModal = false"
+>
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3>Edit Courier</h3>
+      <button class="close-btn" (click)="showEditCourierModal = false">
+        &times;
+      </button>
+    </div>
+    <div class="modal-body">
+      <form [formGroup]="courierForm" (ngSubmit)="updateCourier()">
+        <div class="form-group">
+          <label>Name</label>
+          <input type="text" formControlName="name" placeholder="Full name" />
+        </div>
+        <div class="form-group">
+          <label>Email</label>
+          <input
+            type="email"
+            formControlName="email"
+            placeholder="Email address"
+          />
+        </div>
+        <div class="form-group">
+          <label>Phone</label>
+          <input
+            type="tel"
+            formControlName="phone"
+            placeholder="Phone number"
+          />
+        </div>
+        <div class="form-group">
+          <label>Vehicle Type</label>
+          <select formControlName="vehicleType">
+            <option value="MOTORCYCLE">Motorcycle</option>
+            <option value="CAR">Car</option>
+            <option value="VAN">Van</option>
+            <option value="TRUCK">Truck</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>License Plate</label>
+          <input
+            type="text"
+            formControlName="licensePlate"
+            placeholder="License plate number"
+          />
+        </div>
+        <div class="form-actions">
+          <button
+            type="submit"
+            class="btn btn-primary"
+            [disabled]="courierForm.invalid"
+          >
+            Update Courier
+          </button>
+          <button
+            type="button"
+            class="btn btn-secondary"
+            (click)="showEditCourierModal = false"
+          >
+            Cancel
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Notifications Modal -->
+<div
+  *ngIf="showNotificationsModal"
+  class="inline-modal-overlay"
+  (click)="closeNotificationsModal()"
+>
+  <div
+    class="inline-modal-content notifications-modal"
+    (click)="$event.stopPropagation()"
+  >
+    <div class="inline-modal-header">
+      <h3>Notifications</h3>
+      <div class="notification-actions">
+        <button
+          *ngIf="unreadCount > 0"
+          class="btn-secondary btn-small"
+          (click)="markAllNotificationsAsRead()"
+        >
+          Mark All Read
+        </button>
+        <button class="inline-modal-close" (click)="closeNotificationsModal()">
+          ×
+        </button>
+      </div>
+    </div>
+
+    <div class="notifications-content">
+      <div *ngIf="notificationsLoading" class="loading-spinner">
+        Loading notifications...
+      </div>
+
+      <div
+        *ngIf="!notificationsLoading && notifications.length === 0"
+        class="no-notifications"
+      >
+        <p>No notifications yet</p>
+      </div>
+
+      <div
+        *ngIf="!notificationsLoading && notifications.length > 0"
+        class="notifications-list"
+      >
+        <div
+          *ngFor="let notification of notifications"
+          class="notification-item"
+          [class.unread]="!notification.read"
+        >
+          <div class="notification-content">
+            <div class="notification-header">
+              <h4 class="notification-title">{{ notification.title }}</h4>
+              <span class="notification-time"
+                >{{ notification.createdAt | date:'short' }}</span
+              >
+            </div>
+            <p class="notification-message">{{ notification.message }}</p>
+            <div class="notification-type">{{ notification.type }}</div>
+          </div>
+          <div class="notification-actions">
+            <button
+              *ngIf="!notification.read"
+              class="btn-primary btn-small"
+              (click)="markNotificationAsRead(notification.id)"
+            >
+              Mark Read
+            </button>
+            <button
+              class="btn-secondary btn-small"
+              (click)="deleteNotification(notification.id)"
+            >
+              Delete
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,202 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+enum UserRole {
+  USER
+  ADMIN
+  COURIER
+}
+
+enum ParcelStatus {
+  PENDING
+  PICKED_UP
+  IN_TRANSIT
+  OUT_FOR_DELIVERY
+  DELIVERED
+  CANCELLED
+  RETURNED
+}
+
+enum CourierStatus {
+  AVAILABLE
+  BUSY
+  OFFLINE
+  ON_DELIVERY
+}
+
+enum NotificationType {
+  PARCEL_CREATED
+  PARCEL_ASSIGNED
+  PARCEL_PICKED_UP
+  PARCEL_IN_TRANSIT
+  PARCEL_DELIVERED
+  PARCEL_CANCELLED
+  COURIER_NEARBY
+  DELIVERY_UPDATE
+  SYSTEM_ALERT
+  PAYMENT_RECEIVED
+  PAYMENT_FAILED
+}
+
+enum NotificationPriority {
+  LOW
+  MEDIUM
+  HIGH
+  URGENT
+}
+
+enum NotificationChannel {
+  FRONTEND
+  EMAIL
+  BOTH
+}
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id                      String                @id @default(uuid())
+  email                   String                @unique
+  password                String
+  name                    String
+  phone                   String?
+  role                    UserRole              @default(USER)
+  resetPasswordCode       String?
+  resetPasswordCodeExpiry DateTime?
+  createdAt               DateTime              @default(now())
+  updatedAt               DateTime              @updatedAt
+  // Relations
+  sentParcels             Parcel[]              @relation("SentParcels")
+  receivedParcels         Parcel[]              @relation("ReceivedParcels")
+  notifications           Notification[]
+  courierProfile          Courier?
+  addresses               Address[]
+  ParcelStatusHistory     ParcelStatusHistory[]
+}
+
+model Courier {
+  id              String         @id @default(uuid())
+  user            User           @relation(fields: [userId], references: [id])
+  userId          String         @unique
+  vehicleType     String?
+  licensePlate    String?
+  locationLat     Float?
+  locationLng     Float?
+  currentLocation String?
+  status          CourierStatus  @default(AVAILABLE)
+  isActive        Boolean        @default(true)
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+  // Relations
+  assignedParcels Parcel[]
+  notifications   Notification[]
+}
+
+model Parcel {
+  id                    String                @id @default(uuid())
+  trackingCode          String                @unique
+  description           String?
+  weight                Float?
+  status                ParcelStatus          @default(PENDING)
+  // Pricing fields
+  baseRate              Float                 @default(5.0)
+  weightCharge          Float                 @default(0.0)
+  distanceCharge        Float                 @default(0.0)
+  totalCost             Float                 @default(0.0)
+  distanceKm            Float                 @default(0.0)
+  estimatedDeliveryTime Int? // in minutes
+  createdAt             DateTime              @default(now())
+  updatedAt             DateTime              @updatedAt
+  // Relations
+  sender                User                  @relation("SentParcels", fields: [senderId], references: [id])
+  senderId              String
+  receiver              User                  @relation("ReceivedParcels", fields: [receiverId], references: [id])
+  receiverId            String
+  courier               Courier?              @relation(fields: [courierId], references: [id])
+  courierId             String?
+  pickupAddress         Address?              @relation("PickupAddress", fields: [pickupAddressId], references: [id])
+  pickupAddressId       String?
+  deliveryAddress       Address?              @relation("DeliveryAddress", fields: [deliveryAddressId], references: [id])
+  deliveryAddressId     String?
+  statusHistory         ParcelStatusHistory[]
+  notifications         Notification[]
+}
+
+model Address {
+  id               String   @id @default(uuid())
+  user             User?    @relation(fields: [userId], references: [id])
+  userId           String?
+  line1            String
+  line2            String?
+  city             String
+  state            String
+  country          String
+  postalCode       String?
+  latitude         Float?
+  longitude        Float?
+  formattedAddress String?
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+  // For parcels
+  pickupParcels    Parcel[] @relation("PickupAddress")
+  deliveryParcels  Parcel[] @relation("DeliveryAddress")
+}
+
+model ParcelStatusHistory {
+  id          String       @id @default(uuid())
+  parcel      Parcel       @relation(fields: [parcelId], references: [id])
+  parcelId    String
+  status      ParcelStatus
+  changedAt   DateTime     @default(now())
+  changedBy   User?        @relation(fields: [changedById], references: [id])
+  changedById String?
+  note        String?
+}
+
+model Notification {
+  id        String   @id @default(uuid())
+  user      User?    @relation(fields: [userId], references: [id])
+  userId    String?
+  parcel    Parcel?  @relation(fields: [parcelId], references: [id])
+  parcelId  String?
+  courier   Courier? @relation(fields: [courierId], references: [id])
+  courierId String?
+
+  // Notification content
+  type    NotificationType
+  title   String
+  message String
+  data    Json? // Additional data (coordinates, status, etc.)
+
+  // Notification settings
+  priority NotificationPriority @default(MEDIUM)
+  channel  NotificationChannel  @default(BOTH)
+  read     Boolean              @default(false)
+
+  // Email tracking
+  emailSent   Boolean   @default(false)
+  emailSentAt DateTime?
+  emailError  String? // Error message if email failed
+
+  // Expiration
+  expiresAt DateTime? // Auto-expire notifications
+
+  // Timestamps
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Indexes for performance
+  @@index([userId, read])
+  @@index([userId, createdAt])
+  @@index([type, createdAt])
+}

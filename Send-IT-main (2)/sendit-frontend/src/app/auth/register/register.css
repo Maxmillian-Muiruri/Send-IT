@@ -1,0 +1,188 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+.register-wrapper {
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: #f5f5f5;
+    padding: 20px;
+}
+
+.container {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    width: 100%;
+    max-width: 400px;
+    padding: 40px;
+}
+
+.header {
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+.logo {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    margin-bottom: 20px;
+}
+
+.logo-icon {
+    width: 24px;
+    height: 24px;
+    background-color: #333;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: bold;
+    font-size: 14px;
+}
+
+.logo-text {
+    font-size: 24px;
+    font-weight: 600;
+    color: #333;
+}
+
+.title {
+    font-size: 28px;
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 8px;
+}
+
+.subtitle {
+    color: #666;
+    font-size: 16px;
+}
+
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 500;
+    color: #333;
+    font-size: 14px;
+}
+
+.form-input {
+    width: 100%;
+    padding: 12px 16px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    font-size: 16px;
+    transition: border-color 0.3s;
+    background-color: #fff;
+}
+
+.form-input:focus {
+    outline: none;
+    border-color: #333;
+}
+
+.form-input::placeholder {
+    color: #999;
+}
+
+.checkbox-group {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    margin-bottom: 24px;
+}
+
+.checkbox {
+    width: 18px;
+    height: 18px;
+    margin-top: 2px;
+    flex-shrink: 0;
+}
+
+.checkbox-label {
+    font-size: 14px;
+    color: #666;
+    line-height: 1.4;
+}
+
+.checkbox-label a {
+    color: #333;
+    text-decoration: underline;
+}
+
+.create-btn {
+    width: 100%;
+    background-color: #333;
+    color: white;
+    border: none;
+    padding: 14px;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.3s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+.create-btn:hover {
+    background-color: #555;
+}
+
+.signin-link {
+    text-align: center;
+    margin-top: 20px;
+    color: #666;
+    font-size: 14px;
+}
+
+.signin-link a {
+    color: #333;
+    text-decoration: underline;
+}
+
+.footer-text {
+    text-align: center;
+    margin-top: 30px;
+    color: #999;
+    font-size: 12px;
+    line-height: 1.4;
+}
+
+.user-icon {
+    width: 16px;
+    height: 16px;
+}
+
+.message-box {
+    padding: 1rem;
+    border-radius: 6px;
+    margin-bottom: 1.5rem;
+    font-size: 1rem;
+    text-align: center;
+    font-weight: 500;
+}
+.message-box.success {
+    background: #e6f9ed;
+    color: #20794d;
+    border: 1px solid #b6e2c6;
+}
+.message-box.error {
+    background: #ffeaea;
+    color: #b71c1c;
+    border: 1px solid #f5c6cb;
+}

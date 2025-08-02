@@ -1,0 +1,160 @@
+### Notification System Tests
+
+# Variables
+@adminToken = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2NTk5YzFjYzE5YzFjYzE5YzFjYzE5YzFjYyIsImVtYWlsIjoiYWRtaW5Ac2VuZGl0LmNvbSIsInJvbGUiOiJBRE1JTiIsImlhdCI6MTcwNDE2NzIwMCwiZXhwIjoxNzA0MjUzNjAwfQ.example
+@userToken = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2NTk5YzFjYzE5YzFjYzE5YzFjYzE5YzFjYyIsImVtYWlsIjoidXNlckBzZW5kaXQuY29tIiwicm9sZSI6IlVTRVIiLCJpYXQiOjE3MDQxNjcyMDAsImV4cCI6MTcwNDI1MzYwMH0.example
+@courierToken = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2NTk5YzFjYzE5YzFjYzE5YzFjYzE5YzFjYyIsImVtYWlsIjoiY291cmllckBzZW5kaXQuY29tIiwicm9sZSI6IkNPVVJJRVIiLCJpYXQiOjE3MDQxNjcyMDAsImV4cCI6MTcwNDI1MzYwMH0.example
+
+@userId = 6599c1cc19c1cc19c1cc19c1cc
+@courierId = 6599c1cc19c1cc19c1cc19c1cd
+@parcelId = 6599c1cc19c1cc19c1cc19c1ce
+
+### 1. Get User Notifications
+GET http://localhost:3000/notifications
+Authorization: Bearer {{userToken}}
+Content-Type: application/json
+
+### 2. Get Unread Count
+GET http://localhost:3000/notifications/unread-count
+Authorization: Bearer {{userToken}}
+Content-Type: application/json
+
+### 3. Mark Notification as Read
+PUT http://localhost:3000/notifications/{{notificationId}}/read
+Authorization: Bearer {{userToken}}
+Content-Type: application/json
+
+### 4. Mark All Notifications as Read
+PUT http://localhost:3000/notifications/mark-all-read
+Authorization: Bearer {{userToken}}
+Content-Type: application/json
+
+### 5. Delete Notification
+DELETE http://localhost:3000/notifications/{{notificationId}}
+Authorization: Bearer {{userToken}}
+Content-Type: application/json
+
+### 6. Get Notifications with Pagination
+GET http://localhost:3000/notifications?page=1&limit=10
+Authorization: Bearer {{userToken}}
+Content-Type: application/json
+
+### 7. Get Unread Notifications Only
+GET http://localhost:3000/notifications?unreadOnly=true
+Authorization: Bearer {{userToken}}
+Content-Type: application/json
+
+### 8. Courier Get Notifications
+GET http://localhost:3000/notifications
+Authorization: Bearer {{courierToken}}
+Content-Type: application/json
+
+### 9. Admin Get All Notifications
+GET http://localhost:3000/notifications/admin/all
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+### 10. Admin Get Notifications with Filters
+GET http://localhost:3000/notifications/admin/all?page=1&limit=20&userId={{userId}}&type=PARCEL_CREATED&read=false
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+### 11. Send System Alert to All Users
+POST http://localhost:3000/notifications/admin/system-alert
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "title": "System Maintenance",
+  "message": "The system will be under maintenance from 2:00 AM to 4:00 AM tonight.",
+  "priority": "HIGH",
+  "sendToAll": true
+}
+
+### 12. Send System Alert to Specific Users
+POST http://localhost:3000/notifications/admin/system-alert
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "title": "Important Update",
+  "message": "Your account has been updated with new features.",
+  "priority": "MEDIUM",
+  "userIds": ["{{userId}}", "{{courierId}}"]
+}
+
+### 13. Delete Expired Notifications
+DELETE http://localhost:3000/notifications/admin/expired
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+### 14. Get Notification Statistics
+GET http://localhost:3000/notifications/admin/stats
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+### 15. Test Notification Creation (Admin)
+POST http://localhost:3000/notifications/admin/system-alert
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "title": "Test Notification",
+  "message": "This is a test notification to verify the system is working.",
+  "priority": "LOW",
+  "userIds": ["{{userId}}"]
+}
+
+### 16. Test Parcel Creation (Triggers Notifications)
+POST http://localhost:3000/parcel
+Authorization: Bearer {{userToken}}
+Content-Type: application/json
+
+{
+  "description": "Test parcel for notifications",
+  "weight": 1.5,
+  "receiverId": "{{userId}}",
+  "pickupAddressId": "{{pickupAddressId}}",
+  "deliveryAddressId": "{{deliveryAddressId}}"
+}
+
+### 17. Test Parcel Status Update (Triggers Notifications)
+PUT http://localhost:3000/parcel/{{parcelId}}/status
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "status": "IN_TRANSIT",
+  "notes": "Parcel picked up and in transit"
+}
+
+### 18. Test Courier Assignment (Triggers Notifications)
+PUT http://localhost:3000/parcel/{{parcelId}}/assign-courier
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "courierId": "{{courierId}}"
+}
+
+### 19. Test Parcel Delivery (Triggers Notifications)
+PUT http://localhost:3000/parcel/{{parcelId}}/status
+Authorization: Bearer {{courierToken}}
+Content-Type: application/json
+
+{
+  "status": "DELIVERED",
+  "notes": "Parcel delivered successfully"
+}
+
+### 20. Test High Priority Notification
+POST http://localhost:3000/notifications/admin/system-alert
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "title": "URGENT: System Issue",
+  "message": "There is a critical system issue that needs immediate attention.",
+  "priority": "URGENT",
+  "sendToAll": true
+} 

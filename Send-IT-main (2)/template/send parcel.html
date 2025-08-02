@@ -1,0 +1,656 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>SendIT - Send Parcel</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+          sans-serif;
+        background-color: #f8f9fa;
+        color: #333;
+        line-height: 1.6;
+      }
+
+      /* Header Styles */
+      .header {
+        background: white;
+        border-bottom: 1px solid #e9ecef;
+        padding: 1rem 0;
+        position: sticky;
+        top: 0;
+        z-index: 100;
+      }
+
+      .header-content {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 0 2rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+
+      .logo {
+        font-size: 1.5rem;
+        font-weight: bold;
+        color: #333;
+        display: flex;
+        align-items: center;
+      }
+
+      .logo::before {
+        content: "📦";
+        margin-right: 0.5rem;
+        font-size: 1.3rem;
+      }
+
+      .nav-container {
+        display: flex;
+        flex: 1;
+        justify-content: center;
+      }
+
+      .nav-menu {
+        display: flex;
+        list-style: none;
+        gap: 2rem;
+        margin: 0;
+        padding: 0;
+      }
+
+      .nav-menu a {
+        color: #666;
+        text-decoration: none;
+        font-weight: 500;
+        font-size: 0.95rem;
+        transition: color 0.3s;
+        text-transform: uppercase;
+      }
+
+      .nav-menu a:hover {
+        color: #333;
+      }
+
+      .user-actions {
+        display: flex;
+        align-items: center;
+        gap: 1.5rem;
+      }
+
+      .notification-btn {
+        background: none;
+        border: none;
+        font-size: 1.2rem;
+        cursor: pointer;
+        color: #666;
+        position: relative;
+      }
+
+      .notification-btn::after {
+        content: "🔔";
+      }
+
+      .profile-avatar {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        background: #e9ecef;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        font-size: 1.2rem;
+      }
+
+      .profile-avatar::before {
+        content: "👤";
+      }
+
+      /* Main Content */
+      .main-content {
+        max-width: 1200px;
+        margin: 2rem auto;
+        padding: 0 2rem;
+      }
+
+      .page-header {
+        margin-bottom: 2rem;
+      }
+
+      .page-title {
+        font-size: 1.5rem;
+        font-weight: 600;
+        color: #333;
+        margin-bottom: 0.5rem;
+      }
+
+      .page-subtitle {
+        color: #666;
+        font-size: 1rem;
+        margin-bottom: 1rem;
+      }
+
+      hr {
+        border: none;
+        border-top: 1px solid #e9ecef;
+        margin: 1rem 0;
+      }
+
+      /* Form Layout */
+      .form-container {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 2rem;
+        margin-bottom: 2rem;
+      }
+
+      .form-section {
+        background: white;
+        border-radius: 8px;
+        padding: 2rem;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      }
+
+      .section-title {
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: #333;
+        margin-bottom: 1.5rem;
+      }
+
+      .form-group {
+        margin-bottom: 1.5rem;
+      }
+
+      .form-label {
+        display: block;
+        margin-bottom: 0.5rem;
+        color: #333;
+        font-weight: 500;
+      }
+
+      .form-input {
+        width: 100%;
+        padding: 0.75rem;
+        border: 2px solid #e9ecef;
+        border-radius: 6px;
+        font-size: 1rem;
+        transition: border-color 0.3s;
+      }
+
+      .form-input:focus {
+        outline: none;
+        border-color: #333;
+      }
+
+      .form-input::placeholder {
+        color: #adb5bd;
+      }
+
+      .calculate-btn {
+        width: 100%;
+        background: #333;
+        color: white;
+        padding: 0.875rem;
+        border: none;
+        border-radius: 6px;
+        font-size: 1rem;
+        font-weight: 500;
+        cursor: pointer;
+        transition: background-color 0.3s;
+      }
+
+      .calculate-btn:hover {
+        background: #555;
+      }
+
+      /* Map Section */
+      .map-container {
+        background: #e9ecef;
+        height: 200px;
+        border-radius: 6px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 1.5rem;
+        position: relative;
+      }
+
+      .map-text {
+        color: #666;
+        font-weight: 500;
+        margin-bottom: 0.5rem;
+      }
+
+      .map-subtext {
+        color: #adb5bd;
+        font-size: 0.9rem;
+      }
+
+      /* Route Points */
+      .route-points {
+        margin-bottom: 1.5rem;
+      }
+
+      .route-point {
+        display: flex;
+        align-items: center;
+        margin-bottom: 0.75rem;
+        color: #666;
+      }
+
+      .route-point::before {
+        content: "○";
+        margin-right: 0.75rem;
+        font-size: 1.2rem;
+        color: #adb5bd;
+      }
+
+      /* Delivery Information */
+      .delivery-info {
+        margin-bottom: 2rem;
+      }
+
+      .info-item {
+        display: flex;
+        align-items: center;
+        margin-bottom: 0.75rem;
+        color: #666;
+      }
+
+      .info-item::before {
+        margin-right: 0.75rem;
+        font-size: 1.1rem;
+      }
+
+      .info-item.delivery-time::before {
+        content: "🕒";
+      }
+
+      .info-item.service-type::before {
+        content: "🚚";
+      }
+
+      .info-item.insurance::before {
+        content: "🛡️";
+      }
+
+      /* Cost Section */
+      .cost-section {
+        background: white;
+        border-radius: 8px;
+        padding: 2rem;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      }
+
+      .cost-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-bottom: 1.5rem;
+      }
+
+      .cost-table td {
+        padding: 0.5rem 0;
+        color: #666;
+      }
+
+      .cost-table tr.total td {
+        font-weight: 600;
+        color: #333;
+        border-top: 2px solid #e9ecef;
+        padding-top: 1rem;
+      }
+
+      .cost-value {
+        text-align: right;
+        font-weight: 500;
+        color: #333;
+      }
+
+      /* Footer */
+      .footer {
+        background: white;
+        border-top: 1px solid #e9ecef;
+        padding: 2rem 0;
+        margin-top: 2rem;
+      }
+
+      .footer-content {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 0 2rem;
+      }
+
+      .footer-logo {
+        font-size: 1.5rem;
+        font-weight: bold;
+        margin-bottom: 0.5rem;
+      }
+
+      .footer-description {
+        color: #666;
+        margin-bottom: 1.5rem;
+        max-width: 400px;
+      }
+
+      .footer-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 2rem;
+      }
+
+      .footer-column h3 {
+        font-size: 1rem;
+        margin-bottom: 1rem;
+        color: #333;
+      }
+
+      .footer-column ul {
+        list-style: none;
+      }
+
+      .footer-column li {
+        margin-bottom: 0.5rem;
+      }
+
+      .footer-column a {
+        color: #666;
+        text-decoration: none;
+        transition: color 0.3s;
+      }
+
+      .footer-column a:hover {
+        color: #333;
+      }
+
+      .copyright {
+        color: #666;
+        font-size: 0.9rem;
+        margin-top: 2rem;
+        text-align: center;
+      }
+
+      /* Responsive Design */
+      @media (max-width: 768px) {
+        .form-container {
+          grid-template-columns: 1fr;
+        }
+
+        .footer-grid {
+          grid-template-columns: 1fr;
+        }
+
+        .nav-menu {
+          display: none;
+        }
+
+        .header-content {
+          padding: 0 1rem;
+        }
+      }
+
+      @media (max-width: 480px) {
+        .header-content {
+          flex-wrap: wrap;
+          gap: 1rem;
+        }
+
+        .nav-container {
+          order: 3;
+          flex: 0 0 100%;
+          justify-content: flex-start;
+        }
+
+        .user-actions {
+          margin-left: auto;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Header -->
+    <header class="header">
+      <div class="header-content">
+        <div class="logo">SendIT</div>
+
+        <div class="nav-container">
+          <nav>
+            <ul class="nav-menu">
+              <li><a href="#">Dashboard</a></li>
+              <li><a href="#">Track</a></li>
+              <li><a href="#">History</a></li>
+              <li><a href="#">Profile</a></li>
+            </ul>
+          </nav>
+        </div>
+
+        <div class="user-actions">
+          <button class="notification-btn" title="Notifications"></button>
+          <div class="profile-avatar" title="Profile"></div>
+        </div>
+      </div>
+    </header>
+
+    <!-- Main Co ntent -->
+    <main class="main-content">
+      <div class="page-header">
+        <h1 class="page-title">Send Parcel</h1>
+        <p class="page-subtitle">
+          Fill in the details below to send your parcel
+        </p>
+        <hr />
+      </div>
+
+      <div class="form-container">
+        <!-- Parcel Details Section -->
+        <div class="form-section">
+          <h2 class="section-title">Parcel Details</h2>
+          <form id="parcelForm">
+            <div class="form-group">
+              <label for="receiverEmail" class="form-label"
+                >Receiver Email</label
+              >
+              <input
+                type="email"
+                id="receiverEmail"
+                class="form-input"
+                placeholder="receiver@example.com"
+                value="receiver@example.com"
+              />
+            </div>
+
+            <div class="form-group">
+              <label for="weight" class="form-label">Weight (kg)</label>
+              <input
+                type="number"
+                id="weight"
+                class="form-input"
+                placeholder="0.5"
+                value="0.5"
+                step="0.1"
+                min="0.1"
+              />
+            </div>
+
+            <div class="form-group">
+              <label for="pickupLocation" class="form-label"
+                >Pickup Location</label
+              >
+              <input
+                type="text"
+                id="pickupLocation"
+                class="form-input"
+                placeholder="Enter pickup address"
+              />
+            </div>
+
+            <div class="form-group">
+              <label for="destination" class="form-label">Destination</label>
+              <input
+                type="text"
+                id="destination"
+                class="form-input"
+                placeholder="Enter destination address"
+              />
+            </div>
+
+            <button type="submit" class="calculate-btn">
+              Calculate Cost & Send
+            </button>
+          </form>
+        </div>
+
+        <!-- Route Preview Section -->
+        <div class="form-section">
+          <h2 class="section-title">Route Preview</h2>
+
+          <div class="map-container">
+            <div class="map-text">Map will appear here</div>
+            <div class="map-subtext">
+              Enter pickup and destination to see route
+            </div>
+          </div>
+
+          <div class="route-points">
+            <div class="route-point">Pickup Location</div>
+            <div class="route-point">Destination</div>
+          </div>
+
+          <div class="delivery-info">
+            <h3 class="section-title">Delivery Information</h3>
+            <div class="info-item delivery-time">
+              Estimated delivery: 2-3 business days
+            </div>
+            <div class="info-item service-type">Standard delivery service</div>
+            <div class="info-item insurance">Insured up to $100</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Cost Section -->
+      <div class="cost-section">
+        <h2 class="section-title">Calculate Cost & Send</h2>
+        <table class="cost-table">
+          <tr>
+            <td>Base rate:</td>
+            <td class="cost-value">$5.00</td>
+          </tr>
+          <tr>
+            <td>Weight charge:</td>
+            <td class="cost-value">$0.00</td>
+          </tr>
+          <tr>
+            <td>Distance charge:</td>
+            <td class="cost-value">$0.00</td>
+          </tr>
+          <tr class="total">
+            <td>Total:</td>
+            <td class="cost-value">$5.00</td>
+          </tr>
+        </table>
+      </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+      <div class="footer-content">
+        <div class="footer-logo">SendIT</div>
+        <p class="footer-description">
+          Fast, reliable parcel delivery service for all your shipping needs.
+        </p>
+
+        <div class="footer-grid">
+          <div class="footer-column">
+            <h3>Services</h3>
+            <ul>
+              <li><a href="#">Send Parcel</a></li>
+              <li><a href="#">Track Package</a></li>
+              <li><a href="#">Bulk Shipping</a></li>
+            </ul>
+          </div>
+
+          <div class="footer-column">
+            <h3>Support</h3>
+            <ul>
+              <li><a href="#">Help Center</a></li>
+              <li><a href="#">Contact Us</a></li>
+              <li><a href="#">Shipping Guide</a></li>
+            </ul>
+          </div>
+
+          <div class="footer-column">
+            <h3>Company</h3>
+            <ul>
+              <li><a href="#">About Us</a></li>
+              <li><a href="#">Careers</a></li>
+              <li><a href="#">Privacy Policy</a></li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="copyright">© 2025 SendIT. All rights reserved.</div>
+      </div>
+    </footer>
+
+    <script>
+      // Form handling
+      document
+        .getElementById("parcelForm")
+        .addEventListener("submit", function (e) {
+          e.preventDefault();
+
+          const formData = {
+            receiverEmail: document.getElementById("receiverEmail").value,
+            weight: document.getElementById("weight").value,
+            pickupLocation: document.getElementById("pickupLocation").value,
+            destination: document.getElementById("destination").value,
+          };
+
+          console.log("Parcel form submitted:", formData);
+
+          // Here you would typically send the data to your backend
+          alert("Parcel details submitted! (This is a demo)");
+        });
+
+      // Weight change handler for cost calculation
+      document.getElementById("weight").addEventListener("input", function (e) {
+        const weight = parseFloat(e.target.value) || 0;
+        const baseRate = 5.0;
+        const weightCharge = weight > 1 ? (weight - 1) * 2 : 0;
+        const distanceCharge = 0; // Would be calculated based on pickup/destination
+        const total = baseRate + weightCharge + distanceCharge;
+
+        // Update cost display
+        document.querySelector(
+          ".cost-table tr:nth-child(2) .cost-value"
+        ).textContent = `$${weightCharge.toFixed(2)}`;
+        document.querySelector(
+          ".cost-table tr.total .cost-value"
+        ).textContent = `$${total.toFixed(2)}`;
+      });
+
+      // Notification button
+      document
+        .querySelector(".notification-btn")
+        .addEventListener("click", function () {
+          alert("No new notifications");
+        });
+
+      // Profile avatar click
+      document
+        .querySelector(".profile-avatar")
+        .addEventListener("click", function () {
+          alert("Profile menu would open here");
+        });
+    </script>
+  </body>
+</html>
