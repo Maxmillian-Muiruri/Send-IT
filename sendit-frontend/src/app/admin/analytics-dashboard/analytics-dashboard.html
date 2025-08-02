@@ -1,0 +1,682 @@
+<div class="analytics-container">
+  <!-- Sidebar -->
+  <div class="sidebar">
+    <div class="sidebar-header">
+      <div class="sidebar-logo"></div>
+      <h2>SendIT Admin</h2>
+    </div>
+    <ul class="sidebar-menu">
+      <li>
+        <a routerLink="/admin" class="sidebar-link">
+          <span class="icon">🏠</span> Dashboard
+        </a>
+      </li>
+      <li>
+        <a routerLink="/admin/analytics" class="sidebar-link active">
+          <span class="icon">📊</span> Analytics
+        </a>
+      </li>
+      <!-- <li>
+        <a routerLink="/admin/create-parcel" class="sidebar-link">
+          <span class="icon">📦</span> Create Parcel
+        </a>
+      </li>
+      <li>
+        <a routerLink="/admin/update-status" class="sidebar-link">
+          <span class="icon">🔄</span> Update Status
+        </a>
+      </li> -->
+      <li>
+        <a href="#" (click)="logout()" class="sidebar-link">
+          <span class="icon">🚪</span> Logout
+        </a>
+      </li>
+    </ul>
+  </div>
+
+  <!-- Main Content -->
+  <div class="main-content">
+    <!-- Header -->
+    <div class="analytics-header">
+      <h1>Analytics & Reporting Dashboard</h1>
+      <div class="header-controls">
+        <div class="period-selector">
+          <label for="period">Time Period:</label>
+          <select
+            id="period"
+            [(ngModel)]="selectedPeriod"
+            (change)="onPeriodChange()"
+          >
+            <option value="7">Last 7 Days</option>
+            <option value="30">Last 30 Days</option>
+            <option value="90">Last 90 Days</option>
+            <option value="365">Last Year</option>
+            <option value="custom">Custom Range</option>
+          </select>
+        </div>
+
+        <div *ngIf="selectedPeriod === 'custom'" class="custom-date-inputs">
+          <input
+            type="date"
+            [(ngModel)]="customStartDate"
+            (change)="onCustomDateChange()"
+          />
+          <input
+            type="date"
+            [(ngModel)]="customEndDate"
+            (change)="onCustomDateChange()"
+          />
+        </div>
+
+        <div class="export-controls">
+          <button
+            class="btn btn-primary"
+            (click)="exportReport('dashboard', 'json')"
+          >
+            Export JSON
+          </button>
+          <button
+            class="btn btn-secondary"
+            (click)="exportReport('dashboard', 'csv')"
+          >
+            Export CSV
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Loading and Error States -->
+    <div *ngIf="loading" class="loading-spinner">
+      <div class="spinner"></div>
+      <p>Loading analytics data...</p>
+    </div>
+
+    <div *ngIf="error" class="error-message">
+      <p>{{ error }}</p>
+      <button class="btn btn-primary" (click)="loadAnalytics()">Retry</button>
+    </div>
+
+    <!-- Analytics Content -->
+    <div
+      *ngIf="!loading && !error && dashboardReport"
+      class="analytics-content"
+    >
+      <!-- Navigation Tabs -->
+      <div class="analytics-tabs">
+        <button
+          class="tab-btn"
+          [class.active]="activeTab === 'overview'"
+          (click)="setActiveTab('overview')"
+        >
+          Overview
+        </button>
+        <button
+          class="tab-btn"
+          [class.active]="activeTab === 'parcels'"
+          (click)="setActiveTab('parcels')"
+        >
+          Parcels
+        </button>
+        <button
+          class="tab-btn"
+          [class.active]="activeTab === 'couriers'"
+          (click)="setActiveTab('couriers')"
+        >
+          Couriers
+        </button>
+        <button
+          class="tab-btn"
+          [class.active]="activeTab === 'users'"
+          (click)="setActiveTab('users')"
+        >
+          Users
+        </button>
+        <button
+          class="tab-btn"
+          [class.active]="activeTab === 'revenue'"
+          (click)="setActiveTab('revenue')"
+        >
+          Revenue
+        </button>
+        <button
+          class="tab-btn"
+          [class.active]="activeTab === 'system'"
+          (click)="setActiveTab('system')"
+        >
+          System
+        </button>
+      </div>
+
+      <!-- Overview Tab -->
+      <div *ngIf="activeTab === 'overview'" class="tab-content">
+        <div class="overview-grid">
+          <!-- Key Metrics -->
+          <div class="metrics-section">
+            <h2>Key Performance Indicators</h2>
+            <div class="metrics-grid">
+              <div class="metric-card">
+                <div class="metric-icon">📦</div>
+                <div class="metric-content">
+                  <h3>
+                    {{
+                    formatNumber(dashboardReport.parcelAnalytics.totalParcels)
+                    }}
+                  </h3>
+                  <p>Total Parcels</p>
+                </div>
+              </div>
+
+              <div class="metric-card">
+                <div class="metric-icon">✅</div>
+                <div class="metric-content">
+                  <h3>
+                    {{
+                    formatPercentage(dashboardReport.parcelAnalytics.deliveryRate)
+                    }}
+                  </h3>
+                  <p>Delivery Rate</p>
+                </div>
+              </div>
+
+              <div class="metric-card">
+                <div class="metric-icon">💰</div>
+                <div class="metric-content">
+                  <h3>
+                    {{
+                    formatCurrency(dashboardReport.revenueAnalytics.totalRevenue)
+                    }}
+                  </h3>
+                  <p>Total Revenue</p>
+                </div>
+              </div>
+
+              <div class="metric-card">
+                <div class="metric-icon">👥</div>
+                <div class="metric-content">
+                  <h3>
+                    {{ formatNumber(dashboardReport.userAnalytics.totalUsers) }}
+                  </h3>
+                  <p>Total Users</p>
+                </div>
+              </div>
+
+              <div class="metric-card">
+                <div class="metric-icon">🚚</div>
+                <div class="metric-content">
+                  <h3>
+                    {{
+                    formatNumber(dashboardReport.courierAnalytics.activeCouriers)
+                    }}
+                  </h3>
+                  <p>Active Couriers</p>
+                </div>
+              </div>
+
+              <div class="metric-card">
+                <div class="metric-icon">📈</div>
+                <div class="metric-content">
+                  <h3>
+                    {{
+                    formatPercentage(dashboardReport.revenueAnalytics.revenueGrowth)
+                    }}
+                  </h3>
+                  <p>Revenue Growth</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Parcel Status Distribution -->
+          <div class="chart-section">
+            <h2>Parcel Status Distribution</h2>
+            <div class="chart-container">
+              <div class="status-chart">
+                <div
+                  *ngFor="let item of parcelStatusChartData"
+                  class="status-bar"
+                  [style.background-color]="getStatusColor(item.name)"
+                >
+                  <div class="status-label">{{ item.name }}</div>
+                  <div class="status-value">
+                    {{ item.value }} ({{ formatPercentage(item.percentage) }})
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Revenue by Status -->
+          <div class="chart-section">
+            <h2>Revenue by Status</h2>
+            <div class="chart-container">
+              <div class="revenue-chart">
+                <div
+                  *ngFor="let item of revenueChartData"
+                  class="revenue-bar"
+                  [style.background-color]="getStatusColor(item.name)"
+                >
+                  <div class="revenue-label">{{ item.name }}</div>
+                  <div class="revenue-value">
+                    {{ formatCurrency(item.value) }}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Parcels Tab -->
+      <div *ngIf="activeTab === 'parcels'" class="tab-content">
+        <div class="parcels-analytics">
+          <h2>Parcel Analytics</h2>
+
+          <div class="analytics-grid">
+            <div class="analytics-card">
+              <h3>Parcel Statistics</h3>
+              <div class="stats-list">
+                <div class="stat-item">
+                  <span class="stat-label">Total Parcels:</span>
+                  <span class="stat-value"
+                    >{{
+                    formatNumber(dashboardReport.parcelAnalytics.totalParcels)
+                    }}</span
+                  >
+                </div>
+                <div class="stat-item">
+                  <span class="stat-label">Delivered:</span>
+                  <span class="stat-value"
+                    >{{
+                    formatNumber(dashboardReport.parcelAnalytics.deliveredParcels)
+                    }}</span
+                  >
+                </div>
+                <div class="stat-item">
+                  <span class="stat-label">In Transit:</span>
+                  <span class="stat-value"
+                    >{{
+                    formatNumber(dashboardReport.parcelAnalytics.inTransitParcels)
+                    }}</span
+                  >
+                </div>
+                <div class="stat-item">
+                  <span class="stat-label">Pending:</span>
+                  <span class="stat-value"
+                    >{{
+                    formatNumber(dashboardReport.parcelAnalytics.pendingParcels)
+                    }}</span
+                  >
+                </div>
+                <div class="stat-item">
+                  <span class="stat-label">Cancelled:</span>
+                  <span class="stat-value"
+                    >{{
+                    formatNumber(dashboardReport.parcelAnalytics.cancelledParcels)
+                    }}</span
+                  >
+                </div>
+                <div class="stat-item">
+                  <span class="stat-label">Delivery Rate:</span>
+                  <span class="stat-value"
+                    >{{
+                    formatPercentage(dashboardReport.parcelAnalytics.deliveryRate)
+                    }}</span
+                  >
+                </div>
+                <div class="stat-item">
+                  <span class="stat-label">Avg Delivery Time:</span>
+                  <span class="stat-value"
+                    >{{ dashboardReport.parcelAnalytics.averageDeliveryTime }}
+                    days</span
+                  >
+                </div>
+              </div>
+            </div>
+
+            <div class="analytics-card">
+              <h3>Top Routes</h3>
+              <div class="routes-list">
+                <div
+                  *ngFor="let route of dashboardReport.parcelAnalytics.topRoutes"
+                  class="route-item"
+                >
+                  <div class="route-name">{{ route.route }}</div>
+                  <div class="route-stats">
+                    <span>{{ route.count }} parcels</span>
+                    <span>{{ formatCurrency(route.revenue) }}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="export-section">
+            <button
+              class="btn btn-primary"
+              (click)="exportReport('parcels', 'json')"
+            >
+              Export Parcels JSON
+            </button>
+            <button
+              class="btn btn-secondary"
+              (click)="exportReport('parcels', 'csv')"
+            >
+              Export Parcels CSV
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Couriers Tab -->
+      <div *ngIf="activeTab === 'couriers'" class="tab-content">
+        <div class="couriers-analytics">
+          <h2>Courier Analytics</h2>
+
+          <div class="analytics-grid">
+            <div class="analytics-card">
+              <h3>Courier Statistics</h3>
+              <div class="stats-list">
+                <div class="stat-item">
+                  <span class="stat-label">Total Couriers:</span>
+                  <span class="stat-value"
+                    >{{
+                    formatNumber(dashboardReport.courierAnalytics.totalCouriers)
+                    }}</span
+                  >
+                </div>
+                <div class="stat-item">
+                  <span class="stat-label">Active Couriers:</span>
+                  <span class="stat-value"
+                    >{{
+                    formatNumber(dashboardReport.courierAnalytics.activeCouriers)
+                    }}</span
+                  >
+                </div>
+                <div class="stat-item">
+                  <span class="stat-label">Total Deliveries:</span>
+                  <span class="stat-value"
+                    >{{
+                    formatNumber(dashboardReport.courierAnalytics.totalDeliveries)
+                    }}</span
+                  >
+                </div>
+                <div class="stat-item">
+                  <span class="stat-label">Avg Deliveries/Courier:</span>
+                  <span class="stat-value"
+                    >{{
+                    dashboardReport.courierAnalytics.averageDeliveriesPerCourier
+                    }}</span
+                  >
+                </div>
+              </div>
+            </div>
+
+            <div class="analytics-card">
+              <h3>Top Performers</h3>
+              <div class="performers-list">
+                <div
+                  *ngFor="let performer of dashboardReport.courierAnalytics.topPerformers"
+                  class="performer-item"
+                >
+                  <div class="performer-name">{{ performer.courierName }}</div>
+                  <div class="performer-stats">
+                    <span>{{ performer.deliveries }} deliveries</span>
+                    <span>{{ formatCurrency(performer.revenue) }}</span>
+                    <span>⭐ {{ performer.rating }}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="export-section">
+            <button
+              class="btn btn-primary"
+              (click)="exportReport('couriers', 'json')"
+            >
+              Export Couriers JSON
+            </button>
+            <button
+              class="btn btn-secondary"
+              (click)="exportReport('couriers', 'csv')"
+            >
+              Export Couriers CSV
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Users Tab -->
+      <div *ngIf="activeTab === 'users'" class="tab-content">
+        <div class="users-analytics">
+          <h2>User Analytics</h2>
+
+          <div class="analytics-grid">
+            <div class="analytics-card">
+              <h3>User Statistics</h3>
+              <div class="stats-list">
+                <div class="stat-item">
+                  <span class="stat-label">Total Users:</span>
+                  <span class="stat-value"
+                    >{{ formatNumber(dashboardReport.userAnalytics.totalUsers)
+                    }}</span
+                  >
+                </div>
+                <div class="stat-item">
+                  <span class="stat-label">Active Users:</span>
+                  <span class="stat-value"
+                    >{{ formatNumber(dashboardReport.userAnalytics.activeUsers)
+                    }}</span
+                  >
+                </div>
+                <div class="stat-item">
+                  <span class="stat-label">New Users:</span>
+                  <span class="stat-value"
+                    >{{ formatNumber(dashboardReport.userAnalytics.newUsers)
+                    }}</span
+                  >
+                </div>
+                <div class="stat-item">
+                  <span class="stat-label">User Growth:</span>
+                  <span class="stat-value"
+                    >{{
+                    formatPercentage(dashboardReport.userAnalytics.userGrowth)
+                    }}</span
+                  >
+                </div>
+              </div>
+            </div>
+
+            <div class="analytics-card">
+              <h3>Top Users</h3>
+              <div class="users-list">
+                <div
+                  *ngFor="let user of dashboardReport.userAnalytics.topUsers"
+                  class="user-item"
+                >
+                  <div class="user-name">{{ user.userName }}</div>
+                  <div class="user-stats">
+                    <span>{{ user.parcelsSent }} sent</span>
+                    <span>{{ user.parcelsReceived }} received</span>
+                    <span>{{ formatCurrency(user.totalSpent) }}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="export-section">
+            <button
+              class="btn btn-primary"
+              (click)="exportReport('users', 'json')"
+            >
+              Export Users JSON
+            </button>
+            <button
+              class="btn btn-secondary"
+              (click)="exportReport('users', 'csv')"
+            >
+              Export Users CSV
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Revenue Tab -->
+      <div *ngIf="activeTab === 'revenue'" class="tab-content">
+        <div class="revenue-analytics">
+          <h2>Revenue Analytics</h2>
+
+          <div class="analytics-grid">
+            <div class="analytics-card">
+              <h3>Revenue Statistics</h3>
+              <div class="stats-list">
+                <div class="stat-item">
+                  <span class="stat-label">Total Revenue:</span>
+                  <span class="stat-value"
+                    >{{
+                    formatCurrency(dashboardReport.revenueAnalytics.totalRevenue)
+                    }}</span
+                  >
+                </div>
+                <div class="stat-item">
+                  <span class="stat-label">Average Order Value:</span>
+                  <span class="stat-value"
+                    >{{
+                    formatCurrency(dashboardReport.revenueAnalytics.averageOrderValue)
+                    }}</span
+                  >
+                </div>
+                <div class="stat-item">
+                  <span class="stat-label">Revenue Growth:</span>
+                  <span class="stat-value"
+                    >{{
+                    formatPercentage(dashboardReport.revenueAnalytics.revenueGrowth)
+                    }}</span
+                  >
+                </div>
+              </div>
+            </div>
+
+            <div class="analytics-card">
+              <h3>Revenue by Status</h3>
+              <div class="revenue-list">
+                <div
+                  *ngFor="let item of dashboardReport.revenueAnalytics.revenueByStatus"
+                  class="revenue-item"
+                >
+                  <div class="revenue-status">{{ item.status }}</div>
+                  <div class="revenue-stats">
+                    <span>{{ formatCurrency(item.revenue) }}</span>
+                    <span>{{ formatPercentage(item.percentage) }}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="export-section">
+            <button
+              class="btn btn-primary"
+              (click)="exportReport('revenue', 'json')"
+            >
+              Export Revenue JSON
+            </button>
+            <button
+              class="btn btn-secondary"
+              (click)="exportReport('revenue', 'csv')"
+            >
+              Export Revenue CSV
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- System Tab -->
+      <div *ngIf="activeTab === 'system'" class="tab-content">
+        <div class="system-analytics">
+          <h2>System Analytics</h2>
+
+          <div class="analytics-grid">
+            <div class="analytics-card">
+              <h3>System Statistics</h3>
+              <div class="stats-list">
+                <div class="stat-item">
+                  <span class="stat-label">Total Notifications:</span>
+                  <span class="stat-value"
+                    >{{
+                    formatNumber(dashboardReport.systemAnalytics.totalNotifications)
+                    }}</span
+                  >
+                </div>
+                <div class="stat-item">
+                  <span class="stat-label">Unread Notifications:</span>
+                  <span class="stat-value"
+                    >{{
+                    formatNumber(dashboardReport.systemAnalytics.unreadNotifications)
+                    }}</span
+                  >
+                </div>
+                <div class="stat-item">
+                  <span class="stat-label">Average Response Time:</span>
+                  <span class="stat-value"
+                    >{{
+                    dashboardReport.systemAnalytics.systemPerformance.averageResponseTime
+                    }}ms</span
+                  >
+                </div>
+                <div class="stat-item">
+                  <span class="stat-label">Error Rate:</span>
+                  <span class="stat-value"
+                    >{{
+                    formatPercentage(dashboardReport.systemAnalytics.systemPerformance.errorRate)
+                    }}</span
+                  >
+                </div>
+                <div class="stat-item">
+                  <span class="stat-label">Uptime:</span>
+                  <span class="stat-value"
+                    >{{
+                    formatPercentage(dashboardReport.systemAnalytics.systemPerformance.uptime)
+                    }}</span
+                  >
+                </div>
+              </div>
+            </div>
+
+            <div class="analytics-card">
+              <h3>Notification Statistics</h3>
+              <div class="notifications-list">
+                <div
+                  *ngFor="let item of dashboardReport.systemAnalytics.notificationStats"
+                  class="notification-item"
+                >
+                  <div class="notification-type">{{ item.type }}</div>
+                  <div class="notification-stats">
+                    <span>{{ item.count }} notifications</span>
+                    <span>{{ formatPercentage(item.percentage) }}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="export-section">
+            <button
+              class="btn btn-primary"
+              (click)="exportReport('system', 'json')"
+            >
+              Export System JSON
+            </button>
+            <button
+              class="btn btn-secondary"
+              (click)="exportReport('system', 'csv')"
+            >
+              Export System CSV
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

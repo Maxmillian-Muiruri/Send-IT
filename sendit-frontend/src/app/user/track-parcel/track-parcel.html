@@ -1,0 +1,294 @@
+<div class="container">
+  <!-- Sidebar -->
+  <div class="sidebar">
+    <a
+      routerLink="/"
+      class="logo-link"
+      style="display: flex; align-items: center; text-decoration: none"
+    >
+      <div class="logo">
+        <div class="logo-icon">
+          <svg viewBox="0 0 24 24" fill="currentColor">
+            <path
+              d="M20 8h-3V4H3c-1.1 0-2 .9-2 2v11h2c0 1.66 1.34 3 3 3s3-1.34 3-3h6c0 1.66 1.34 3 3 3s3-1.34 3-3h2v-5l-3-4zM6 18.5c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zm13.5-9l1.96 2.5H17V9.5h2.5zm-1.5 9c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"
+            />
+          </svg>
+        </div>
+        <div class="logo-text">SendIT</div>
+      </div>
+    </a>
+
+    <ul class="nav-menu">
+      <li class="nav-item">
+        <a
+          routerLink="/user/dashboard"
+          routerLinkActive="active"
+          class="nav-link"
+        >
+          <svg class="nav-icon" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z" />
+          </svg>
+          Home
+        </a>
+      </li>
+      <li class="nav-item">
+        <a
+          routerLink="/user/view-sent"
+          routerLinkActive="active"
+          class="nav-link"
+        >
+          <svg class="nav-icon" viewBox="0 0 24 24" fill="currentColor">
+            <path
+              d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 14l-4-4h3V9h2v4h3l-4 4z"
+            />
+          </svg>
+          Sent Parcels
+        </a>
+      </li>
+      <li class="nav-item">
+        <a
+          routerLink="/user/view-received"
+          routerLinkActive="active"
+          class="nav-link"
+        >
+          <svg class="nav-icon" viewBox="0 0 24 24" fill="currentColor">
+            <path
+              d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 14l4-4h-3V9h-2v4H8l4 4z"
+            />
+          </svg>
+          Received Parcels
+        </a>
+      </li>
+      <li class="nav-item">
+        <a routerLink="/user/track" routerLinkActive="active" class="nav-link">
+          <svg class="nav-icon" viewBox="0 0 24 24" fill="currentColor">
+            <path
+              d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"
+            />
+          </svg>
+          Track Parcel
+        </a>
+      </li>
+      <li class="nav-item">
+        <a
+          routerLink="/user/profile"
+          routerLinkActive="active"
+          class="nav-link"
+        >
+          <svg class="nav-icon" viewBox="0 0 24 24" fill="currentColor">
+            <path
+              d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"
+            />
+          </svg>
+          Profile
+        </a>
+      </li>
+    </ul>
+    <div class="logout-section">
+      <ul class="nav-menu">
+        <li class="nav-item">
+          <button class="nav-link" (click)="logout()">
+            <svg class="nav-icon" viewBox="0 0 24 24" fill="currentColor">
+              <path
+                d="M17 7l-1.41 1.41L18.17 11H8v2h10.17l-2.58 2.59L17 17l5-5zM4 5h8V3H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h8v-2H4V5z"
+              />
+            </svg>
+            Logout
+          </button>
+        </li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- Main Content -->
+  <div class="main-content">
+    <div class="tracking-container">
+      <div class="tracking-header">
+        <h1>Track Your Parcel</h1>
+        <p>Enter your tracking ID to get real-time updates</p>
+      </div>
+
+      <form
+        [formGroup]="trackForm"
+        (ngSubmit)="onSubmit()"
+        class="tracking-form"
+      >
+        <div class="form-group">
+          <label for="trackingId" class="form-label">Tracking ID</label>
+          <input
+            type="text"
+            id="trackingId"
+            class="form-input"
+            placeholder="Enter tracking ID (e.g., TRK-ABC12345)"
+            formControlName="trackingId"
+            [disabled]="loading"
+          />
+        </div>
+        <button
+          type="submit"
+          class="track-btn"
+          [disabled]="loading || trackForm.invalid"
+        >
+          <span *ngIf="loading" class="loading-spinner"></span>
+          Track Parcel
+        </button>
+      </form>
+
+      <!-- Results Section -->
+      <div *ngIf="searched" class="results-section">
+        <div *ngIf="notFound" class="not-found">
+          <div class="not-found-icon">📦</div>
+          <h3>Parcel Not Found</h3>
+          <p>
+            No parcel found with the provided tracking ID. Please check and try
+            again.
+          </p>
+        </div>
+
+        <div *ngIf="foundParcel" class="parcel-details">
+          <div class="parcel-header">
+            <h2>Parcel Details</h2>
+            <div class="tracking-code">
+              Tracking: {{ foundParcel.trackingCode }}
+            </div>
+          </div>
+
+          <!-- Progress Steps -->
+          <div class="progress-section">
+            <h3>Delivery Progress</h3>
+            <div class="progress-steps">
+              <div
+                *ngFor="let step of getProgressSteps(); let i = index"
+                class="progress-step"
+                [ngClass]="step.status"
+              >
+                <div class="step-icon">{{ step.icon }}</div>
+                <div class="step-content">
+                  <div class="step-label">{{ step.label }}</div>
+                  <div class="step-time" *ngIf="step.time">{{ step.time }}</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Parcel Information -->
+          <div class="parcel-info">
+            <div class="info-grid">
+              <div class="info-item">
+                <label>Status</label>
+                <span
+                  class="status-badge"
+                  [ngClass]="foundParcel.status.toLowerCase()"
+                >
+                  {{ getStatusDisplay(foundParcel.status) }}
+                </span>
+              </div>
+              <div class="info-item">
+                <label>Description</label>
+                <span>{{ foundParcel.description }}</span>
+              </div>
+              <div class="info-item">
+                <label>Weight</label>
+                <span>{{ foundParcel.weight }} kg</span>
+              </div>
+              <div class="info-item">
+                <label>Total Cost</label>
+                <span>KES {{ foundParcel.totalCost }}</span>
+              </div>
+              <div class="info-item">
+                <label>Pickup Address</label>
+                <span
+                  >{{ foundParcel.pickupAddress?.formattedAddress || 'N/A'
+                  }}</span
+                >
+              </div>
+              <div class="info-item">
+                <label>Delivery Address</label>
+                <span
+                  >{{ foundParcel.deliveryAddress?.formattedAddress || 'N/A'
+                  }}</span
+                >
+              </div>
+              <div class="info-item" *ngIf="foundParcel.courier">
+                <label>Courier</label>
+                <span>{{ foundParcel.courier.user?.name || 'N/A' }}</span>
+              </div>
+              <div
+                class="info-item"
+                *ngIf="foundParcel.courier?.locationLat && foundParcel.courier?.locationLng"
+              >
+                <label>Current Location</label>
+                <span>{{ getCurrentLocation() }}</span>
+              </div>
+              <div
+                class="info-item"
+                *ngIf="foundParcel.courier && !foundParcel.courier.currentLocation"
+              >
+                <label>Courier Status</label>
+                <span style="color: #f59e0b">📍 Location not updated yet</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Map Section -->
+          <div class="map-section">
+            <h3>Location</h3>
+            <app-map
+              [pickupCoords]="pickupCoords"
+              [destinationCoords]="destinationCoords"
+              [courierCoords]="currentCoords"
+            >
+            </app-map>
+            <div class="map-info">
+              <div class="map-info-item">
+                <strong>📍 Pickup:</strong> {{
+                foundParcel.pickupAddress?.formattedAddress || 'N/A' }}
+              </div>
+              <div
+                class="map-info-item"
+                *ngIf="foundParcel.status !== 'DELIVERED'"
+              >
+                <strong>🎯 Final Destination:</strong> {{
+                foundParcel.deliveryAddress?.formattedAddress || 'N/A' }}
+              </div>
+              <div
+                class="map-info-item"
+                *ngIf="foundParcel.status === 'DELIVERED'"
+              >
+                <strong>✅ Delivered to:</strong> {{
+                foundParcel.deliveryAddress?.formattedAddress || 'N/A' }}
+              </div>
+              <div
+                class="map-info-item"
+                *ngIf="foundParcel.courier && foundParcel.courier.currentLocation && ['IN_TRANSIT', 'OUT_FOR_DELIVERY', 'PICKED_UP'].includes(foundParcel.status)"
+              >
+                <strong>🚚 Courier Location:</strong> {{
+                foundParcel.courier.currentLocation }}
+              </div>
+            </div>
+          </div>
+
+          <!-- Tracking History -->
+          <div class="tracking-history">
+            <h3>Tracking History</h3>
+            <div class="history-list">
+              <div
+                *ngFor="let event of getTrackingHistory()"
+                class="history-item"
+              >
+                <div class="history-icon">📍</div>
+                <div class="history-content">
+                  <div class="history-title">{{ event.title }}</div>
+                  <div class="history-time">{{ event.time }}</div>
+                  <div class="history-description">{{ event.location }}</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+

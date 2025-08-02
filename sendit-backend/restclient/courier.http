@@ -1,0 +1,442 @@
+### SendIT Courier Module API Tests
+### This file contains all CRUD operations for testing the Courier module
+
+### ========================================
+### AUTHENTICATION SETUP (Copy tokens from user.http)
+### ========================================
+
+### Make sure you have these tokens from user.http:
+### @userToken = your_user_jwt_token_here
+### @adminToken = your_admin_jwt_token_here
+### @courierToken = your_courier_jwt_token_here
+
+### ========================================
+### COURIER CREATION OPERATIONS
+### ========================================
+ adminToken = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJkY2YzZDBmZS0zMzExLTQ5NGUtYjJhOC1mNzI1Yzg1Nzg3MjYiLCJlbWFpbCI6ImFkbWluQHNlbmRpdC5jb20iLCJyb2xlIjoiQURNSU4iLCJpYXQiOjE3NTM3Nzk3NjUsImV4cCI6MTc1Mzg2NjE2NX0.NmftZzfOGsay1o3JgKnCcOcmb2lVI6TXQXwJg7sdKKw
+  
+### 1. Create a courier (Admin only)
+POST http://localhost:3000/courier
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "userId": "{{courierUserId}}",
+  "vehicleType": "Motorcycle",
+  "licensePlate": "ABC123",
+  "currentLatitude": 40.7128,
+  "currentLongitude": -74.0060,
+  "currentLocation": "New York, NY",
+  "status": "AVAILABLE"
+}
+
+### 2. Create another courier (Admin only)
+POST http://localhost:3000/courier
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "userId": "{{anotherCourierUserId}}",
+  "vehicleType": "Car",
+  "licensePlate": "XYZ789",
+  "currentLatitude": 34.0522,
+  "currentLongitude": -118.2437,
+  "currentLocation": "Los Angeles, CA",
+  "status": "AVAILABLE"
+}
+
+### 3. Create courier with minimal data (Admin only)
+POST http://localhost:3000/courier
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "userId": "{{minimalCourierUserId}}"
+}
+
+### ========================================
+### COURIER RETRIEVAL OPERATIONS
+### ========================================
+
+### 4. Get all couriers (Admin only)
+GET http://localhost:3000/courier
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+### 5. Get all couriers with pagination (Admin only)
+GET http://localhost:3000/courier?page=1&limit=5
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+### 6. Get all couriers with search (Admin only)
+GET http://localhost:3000/courier?search=motorcycle
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+### 7. Get all couriers filtered by status (Admin only)
+GET http://localhost:3000/courier?status=AVAILABLE
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+### 8. Get available couriers (Admin only)
+GET http://localhost:3000/courier/available
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+### 9. Get specific courier by ID (Admin)
+GET http://localhost:3000/courier/{{courierId}}
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+### 10. Get specific courier by ID (Courier - own profile)
+GET http://localhost:3000/courier/{{courierId}}
+Authorization: Bearer {{courierToken}}
+Content-Type: application/json
+
+### 11. Get courier profile by user ID (Courier - own profile)
+GET http://localhost:3000/courier/profile/me
+Authorization: Bearer {{courierToken}}
+Content-Type: application/json
+
+### 12. Get courier stats (Admin)
+GET http://localhost:3000/courier/{{courierId}}/stats
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+### 13. Get courier stats (Courier - own stats)
+GET http://localhost:3000/courier/{{courierId}}/stats
+Authorization: Bearer {{courierToken}}
+Content-Type: application/json
+
+### ========================================
+### COURIER UPDATE OPERATIONS
+### ========================================
+
+### 14. Update courier details (Admin only)
+PUT http://localhost:3000/courier/{{courierId}}
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "vehicleType": "Updated Motorcycle",
+  "licensePlate": "ABC123UPD",
+  "currentLocation": "Updated Location"
+}
+
+### 15. Update courier location (Courier - own location)
+PUT http://localhost:3000/courier/{{courierId}}/location
+Authorization: Bearer {{courierToken}}
+Content-Type: application/json
+
+{
+  "latitude": 40.7589,
+  "longitude": -73.9851,
+  "location": "Times Square, New York"
+}
+
+### 16. Update courier status to BUSY (Courier - own status)
+PUT http://localhost:3000/courier/{{courierId}}/status
+Authorization: Bearer {{courierToken}}
+Content-Type: application/json
+
+{
+  "status": "BUSY"
+}
+
+### 17. Update courier status to AVAILABLE (Courier - own status)
+PUT http://localhost:3000/courier/{{courierId}}/status
+Authorization: Bearer {{courierToken}}
+Content-Type: application/json
+
+{
+  "status": "AVAILABLE"
+}
+
+### 18. Update courier status to OFFLINE (Courier - own status)
+PUT http://localhost:3000/courier/{{courierId}}/status
+Authorization: Bearer {{courierToken}}
+Content-Type: application/json
+
+{
+  "status": "OFFLINE"
+}
+
+### 19. Update courier status (Admin)
+PUT http://localhost:3000/courier/{{courierId}}/status
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "status": "AVAILABLE"
+}
+
+### ========================================
+### COURIER DELETION OPERATIONS (Admin only)
+### ========================================
+
+### 20. Delete courier (Admin only) - WARNING: Permanent
+DELETE http://localhost:3000/courier/{{courierId}}
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+### ========================================
+### ERROR TESTING
+### ========================================
+
+### 21. Try to create courier as user (should fail - only admin can create)
+POST http://localhost:3000/courier
+Authorization: Bearer {{userToken}}
+Content-Type: application/json
+
+{
+  "userId": "{{courierUserId}}",
+  "vehicleType": "User trying to create courier"
+}
+
+### 22. Try to create courier as courier (should fail - only admin can create)
+POST http://localhost:3000/courier
+Authorization: Bearer {{courierToken}}
+Content-Type: application/json
+
+{
+  "userId": "{{courierUserId}}",
+  "vehicleType": "Courier trying to create courier"
+}
+
+### 23. Try to get all couriers as user (should fail - only admin can view all)
+GET http://localhost:3000/courier
+Authorization: Bearer {{userToken}}
+Content-Type: application/json
+
+### 24. Try to get all couriers as courier (should fail - only admin can view all)
+GET http://localhost:3000/courier
+Authorization: Bearer {{courierToken}}
+Content-Type: application/json
+
+### 25. Try to update courier as user (should fail - only admin can update)
+PUT http://localhost:3000/courier/{{courierId}}
+Authorization: Bearer {{userToken}}
+Content-Type: application/json
+
+{
+  "vehicleType": "User trying to update courier"
+}
+
+### 26. Try to update courier as courier (should fail - only admin can update)
+PUT http://localhost:3000/courier/{{courierId}}
+Authorization: Bearer {{courierToken}}
+Content-Type: application/json
+
+{
+  "vehicleType": "Courier trying to update courier"
+}
+
+### 27. Try to update location as user (should fail - only courier can update own location)
+PUT http://localhost:3000/courier/{{courierId}}/location
+Authorization: Bearer {{userToken}}
+Content-Type: application/json
+
+{
+  "latitude": 40.7589,
+  "longitude": -73.9851
+}
+
+### 28. Try to update status as user (should fail - only courier/admin can update status)
+PUT http://localhost:3000/courier/{{courierId}}/status
+Authorization: Bearer {{userToken}}
+Content-Type: application/json
+
+{
+  "status": "AVAILABLE"
+}
+
+### 29. Try to delete courier as user (should fail - only admin can delete)
+DELETE http://localhost:3000/courier/{{courierId}}
+Authorization: Bearer {{userToken}}
+Content-Type: application/json
+
+### 30. Try to delete courier as courier (should fail - only admin can delete)
+DELETE http://localhost:3000/courier/{{courierId}}
+Authorization: Bearer {{courierToken}}
+Content-Type: application/json
+
+### 31. Try to access protected endpoint without token (should fail)
+GET http://localhost:3000/courier
+Content-Type: application/json
+
+### 32. Try to access protected endpoint with invalid token (should fail)
+GET http://localhost:3000/courier
+Authorization: Bearer invalid-token
+Content-Type: application/json
+
+### 33. Try to create courier with invalid data (should fail)
+POST http://localhost:3000/courier
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "vehicleType": "Missing required userId"
+}
+
+### 34. Try to create courier for non-courier user (should fail)
+POST http://localhost:3000/courier
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "userId": "{{userUserId}}",
+  "vehicleType": "Regular user as courier"
+}
+
+### 35. Try to update status with invalid status (should fail)
+PUT http://localhost:3000/courier/{{courierId}}/status
+Authorization: Bearer {{courierToken}}
+Content-Type: application/json
+
+{
+  "status": "INVALID_STATUS"
+}
+
+### ========================================
+### BULK OPERATIONS
+### ========================================
+
+### 36. Create multiple couriers for bulk testing
+POST http://localhost:3000/courier
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "userId": "{{bulkCourier1UserId}}",
+  "vehicleType": "Bulk test courier 1",
+  "licensePlate": "BULK001"
+}
+
+###
+
+POST http://localhost:3000/courier
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "userId": "{{bulkCourier2UserId}}",
+  "vehicleType": "Bulk test courier 2",
+  "licensePlate": "BULK002"
+}
+
+###
+
+POST http://localhost:3000/courier
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "userId": "{{bulkCourier3UserId}}",
+  "vehicleType": "Bulk test courier 3",
+  "licensePlate": "BULK003"
+}
+
+### 37. Test pagination with multiple couriers
+GET http://localhost:3000/courier?page=1&limit=2
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+###
+
+GET http://localhost:3000/courier?page=2&limit=2
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+### 38. Test search functionality
+GET http://localhost:3000/courier?search=bulk
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+### 39. Test status filtering
+GET http://localhost:3000/courier?status=AVAILABLE
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+### ========================================
+### WORKFLOW TESTING
+### ========================================
+
+### 40. Complete courier workflow test
+### Step 1: Create courier
+POST http://localhost:3000/courier
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "userId": "{{workflowCourierUserId}}",
+  "vehicleType": "Workflow test courier",
+  "licensePlate": "WORK001",
+  "status": "AVAILABLE"
+}
+
+### Step 2: Update location
+PUT http://localhost:3000/courier/{{workflowCourierId}}/location
+Authorization: Bearer {{workflowCourierToken}}
+Content-Type: application/json
+
+{
+  "latitude": 40.7589,
+  "longitude": -73.9851,
+  "location": "Times Square, New York"
+}
+
+### Step 3: Update status to BUSY
+PUT http://localhost:3000/courier/{{workflowCourierId}}/status
+Authorization: Bearer {{workflowCourierToken}}
+Content-Type: application/json
+
+{
+  "status": "BUSY"
+}
+
+### Step 4: Update status back to AVAILABLE
+PUT http://localhost:3000/courier/{{workflowCourierId}}/status
+Authorization: Bearer {{workflowCourierToken}}
+Content-Type: application/json
+
+{
+  "status": "AVAILABLE"
+}
+
+### ========================================
+### VARIABLES FOR REST CLIENT
+### ========================================
+
+### After running the requests, copy the values to these variables:
+
+# @userToken = your_user_jwt_token_here
+# @adminToken = your_admin_jwt_token_here
+# @courierToken = your_courier_jwt_token_here
+# @courierId = courier_id_from_response
+# @workflowCourierId = courier_id_for_workflow_testing
+# @courierUserId = courier_user_id
+# @anotherCourierUserId = another_courier_user_id
+# @minimalCourierUserId = minimal_courier_user_id
+# @userUserId = regular_user_id
+# @bulkCourier1UserId = bulk_courier_1_user_id
+# @bulkCourier2UserId = bulk_courier_2_user_id
+# @bulkCourier3UserId = bulk_courier_3_user_id
+# @workflowCourierUserId = workflow_courier_user_id
+# @workflowCourierToken = workflow_courier_jwt_token
+
+### ========================================
+### USAGE INSTRUCTIONS
+### ========================================
+
+### 1. First, run the user.http file to get authentication tokens
+### 2. Update the token variables above with actual values
+### 3. Create test users with COURIER role if needed
+### 4. Run the courier creation requests (1-3)
+### 5. Copy courier IDs to variables for testing
+### 6. Test retrieval operations (4-13)
+### 7. Test update operations (14-19)
+### 8. Test error scenarios (21-35)
+### 9. Test bulk operations (36-39)
+### 10. Test complete workflow (40)
+
+### Note: Replace all {{variable}} placeholders with actual values from responses 

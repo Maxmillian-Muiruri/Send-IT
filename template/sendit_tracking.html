@@ -1,0 +1,690 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SendIT - Track Your Parcel</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background-color: #f8f9fa;
+            color: #333;
+        }
+
+        /* Header */
+        .header {
+            background: white;
+            border-bottom: 1px solid #e9ecef;
+            padding: 12px 0;
+        }
+
+        .header-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 20px;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .logo-icon {
+            width: 24px;
+            height: 24px;
+            background: #333;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 12px;
+        }
+
+        .nav {
+            display: flex;
+            gap: 32px;
+        }
+
+        .nav a {
+            text-decoration: none;
+            color: #666;
+            font-weight: 500;
+            transition: color 0.2s;
+        }
+
+        .nav a:hover, .nav a.active {
+            color: #333;
+        }
+
+        .user-section {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .notification-btn {
+            background: none;
+            border: none;
+            font-size: 18px;
+            cursor: pointer;
+            color: #666;
+        }
+
+        .user-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: #f0f0f0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            color: #666;
+        }
+
+        /* Main Content */
+        .main-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+
+        .track-section {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .track-title {
+            font-size: 32px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .track-subtitle {
+            color: #666;
+            margin-bottom: 24px;
+        }
+
+        .track-form {
+            display: flex;
+            justify-content: center;
+            gap: 0;
+            max-width: 500px;
+            margin: 0 auto;
+        }
+
+        .track-input {
+            flex: 1;
+            padding: 12px 16px;
+            border: 1px solid #ddd;
+            border-radius: 8px 0 0 8px;
+            font-size: 16px;
+            border-right: none;
+        }
+
+        .track-input:focus {
+            outline: none;
+            border-color: #333;
+        }
+
+        .track-btn {
+            padding: 12px 24px;
+            background: #333;
+            color: white;
+            border: none;
+            border-radius: 0 8px 8px 0;
+            cursor: pointer;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .track-btn:hover {
+            background: #555;
+        }
+
+        /* Parcel Information */
+        .parcel-info {
+            background: white;
+            border-radius: 12px;
+            padding: 32px;
+            margin-bottom: 32px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .parcel-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+        }
+
+        .parcel-header h2 {
+            font-size: 20px;
+            font-weight: 600;
+        }
+
+        .status-badge {
+            background: #e3f2fd;
+            color: #1976d2;
+            padding: 4px 12px;
+            border-radius: 16px;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .parcel-details {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 32px;
+            margin-bottom: 32px;
+        }
+
+        .detail-section h3 {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .detail-item {
+            margin-bottom: 12px;
+        }
+
+        .detail-label {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 2px;
+        }
+
+        .detail-value {
+            font-weight: 500;
+        }
+
+        .parcel-meta {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 24px;
+            padding-top: 24px;
+            border-top: 1px solid #e9ecef;
+        }
+
+        .meta-item .detail-label {
+            font-size: 13px;
+            color: #666;
+        }
+
+        .meta-item .detail-value {
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        /* Tracking Progress */
+        .tracking-progress {
+            background: white;
+            border-radius: 12px;
+            padding: 32px;
+            margin-bottom: 32px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .progress-header {
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 32px;
+        }
+
+        .progress-timeline {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: relative;
+            margin-bottom: 24px;
+        }
+
+        .progress-step {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: relative;
+            z-index: 2;
+        }
+
+        .step-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            margin-bottom: 8px;
+            color: white;
+        }
+
+        .step-icon.completed {
+            background: #28a745;
+        }
+
+        .step-icon.active {
+            background: #007bff;
+        }
+
+        .step-icon.pending {
+            background: #dee2e6;
+            color: #6c757d;
+        }
+
+        .step-label {
+            font-size: 14px;
+            font-weight: 500;
+            text-align: center;
+        }
+
+        .step-time {
+            font-size: 12px;
+            color: #666;
+            text-align: center;
+        }
+
+        .progress-line {
+            position: absolute;
+            top: 24px;
+            left: 48px;
+            right: 48px;
+            height: 2px;
+            background: #dee2e6;
+            z-index: 1;
+        }
+
+        .progress-line::after {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            height: 100%;
+            width: 50%;
+            background: #28a745;
+        }
+
+        /* Bottom Section */
+        .bottom-section {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 32px;
+        }
+
+        .location-section, .history-section {
+            background: white;
+            border-radius: 12px;
+            padding: 32px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .section-title {
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 24px;
+        }
+
+        .location-map {
+            background: #f8f9fa;
+            border-radius: 8px;
+            height: 200px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 16px;
+            position: relative;
+        }
+
+        .map-pin {
+            font-size: 32px;
+            color: #666;
+            margin-bottom: 8px;
+        }
+
+        .location-text {
+            font-weight: 500;
+            text-align: center;
+            margin-bottom: 4px;
+        }
+
+        .location-update {
+            font-size: 12px;
+            color: #666;
+            text-align: center;
+        }
+
+        .history-item {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 16px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .history-item:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+            padding-bottom: 0;
+        }
+
+        .history-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #007bff;
+            margin-top: 6px;
+            flex-shrink: 0;
+        }
+
+        .history-content {
+            flex: 1;
+        }
+
+        .history-title {
+            font-weight: 500;
+            margin-bottom: 2px;
+        }
+
+        .history-location {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 2px;
+        }
+
+        .history-time {
+            font-size: 12px;
+            color: #999;
+        }
+
+        /* Footer */
+        .footer {
+            background: white;
+            border-top: 1px solid #e9ecef;
+            padding: 24px 0;
+            margin-top: 60px;
+        }
+
+        .footer-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 20px;
+        }
+
+        .footer-logo {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 600;
+        }
+
+        .footer-text {
+            color: #666;
+            font-size: 14px;
+        }
+
+        @media (max-width: 768px) {
+            .parcel-details {
+                grid-template-columns: 1fr;
+            }
+            
+            .parcel-meta {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .bottom-section {
+                grid-template-columns: 1fr;
+            }
+            
+            .nav {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="header-content">
+            <div class="logo">
+                <div class="logo-icon">📦</div>
+                <span>SendIT</span>
+            </div>
+            <nav class="nav">
+                <a href="#">Home</a>
+                <a href="#">Send Parcel</a>
+                <a href="#" class="active">Track</a>
+                <a href="#">Contact</a>
+            </nav>
+            <div class="user-section">
+                <button class="notification-btn">🔔</button>
+                <div class="user-avatar">👤</div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Track Section -->
+        <section class="track-section">
+            <h1 class="track-title">Track Your Parcel</h1>
+            <p class="track-subtitle">Enter your parcel ID to get real-time tracking information</p>
+            <form class="track-form">
+                <input type="text" class="track-input" placeholder="PKG-2025-001234" value="PKG-2025-001234">
+                <button type="submit" class="track-btn">
+                    🔍 Track
+                </button>
+            </form>
+        </section>
+
+        <!-- Parcel Information -->
+        <section class="parcel-info">
+            <div class="parcel-header">
+                <h2>Parcel Information</h2>
+                <div class="status-badge">In Transit</div>
+            </div>
+            
+            <div class="parcel-details">
+                <div class="detail-section">
+                    <h3>👤 Sender Details</h3>
+                    <div class="detail-item">
+                        <div class="detail-label">Name</div>
+                        <div class="detail-value">John Smith</div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="detail-label">Address</div>
+                        <div class="detail-value">123 Main St, New York, NY 10001</div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="detail-label">Phone</div>
+                        <div class="detail-value">+1 (555) 123-4567</div>
+                    </div>
+                </div>
+                
+                <div class="detail-section">
+                    <h3>📍 Receiver Details</h3>
+                    <div class="detail-item">
+                        <div class="detail-label">Name</div>
+                        <div class="detail-value">Sarah Johnson</div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="detail-label">Address</div>
+                        <div class="detail-value">456 Oak Ave, Los Angeles, CA 90210</div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="detail-label">Phone</div>
+                        <div class="detail-value">+1 (555) 987-6543</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="parcel-meta">
+                <div class="meta-item">
+                    <div class="detail-label">Parcel ID</div>
+                    <div class="detail-value">PKG-2025-001234</div>
+                </div>
+                <div class="meta-item">
+                    <div class="detail-label">Weight</div>
+                    <div class="detail-value">2.5 kg</div>
+                </div>
+                <div class="meta-item">
+                    <div class="detail-label">Service Type</div>
+                    <div class="detail-value">Express</div>
+                </div>
+                <div class="meta-item">
+                    <div class="detail-label">Est. Delivery</div>
+                    <div class="detail-value">Jan 15, 2025</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Tracking Progress -->
+        <section class="tracking-progress">
+            <h2 class="progress-header">Tracking Progress</h2>
+            <div class="progress-timeline">
+                <div class="progress-line"></div>
+                <div class="progress-step">
+                    <div class="step-icon completed">✓</div>
+                    <div class="step-label">Pickup</div>
+                    <div class="step-time">Jan 12, 10:30 AM</div>
+                </div>
+                <div class="progress-step">
+                    <div class="step-icon active">🚚</div>
+                    <div class="step-label">In Transit</div>
+                    <div class="step-time">Jan 13, 2:15 PM</div>
+                </div>
+                <div class="progress-step">
+                    <div class="step-icon pending">📦</div>
+                    <div class="step-label">Delivered</div>
+                    <div class="step-time">Pending</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Bottom Section -->
+        <div class="bottom-section">
+            <!-- Current Location -->
+            <section class="location-section">
+                <h2 class="section-title">Current Location</h2>
+                <div class="location-map">
+                    <div class="map-pin">📍</div>
+                    <div class="location-text">Phoenix, AZ Distribution Center</div>
+                    <div class="location-update">Last updated: 2 hours ago</div>
+                </div>
+            </section>
+
+            <!-- Tracking History -->
+            <section class="history-section">
+                <h2 class="section-title">Tracking History</h2>
+                <div class="history-item">
+                    <div class="history-dot"></div>
+                    <div class="history-content">
+                        <div class="history-title">Package in transit</div>
+                        <div class="history-location">Phoenix, AZ Distribution Center</div>
+                        <div class="history-time">Jan 13, 2025 - 2:15 PM</div>
+                    </div>
+                </div>
+                <div class="history-item">
+                    <div class="history-dot"></div>
+                    <div class="history-content">
+                        <div class="history-title">Package departed facility</div>
+                        <div class="history-location">Denver, CO Sorting Facility</div>
+                        <div class="history-time">Jan 13, 2025 - 8:30 AM</div>
+                    </div>
+                </div>
+                <div class="history-item">
+                    <div class="history-dot"></div>
+                    <div class="history-content">
+                        <div class="history-title">Package arrived at facility</div>
+                        <div class="history-location">Denver, CO Sorting Facility</div>
+                        <div class="history-time">Jan 12, 2025 - 11:45 PM</div>
+                    </div>
+                </div>
+                <div class="history-item">
+                    <div class="history-dot"></div>
+                    <div class="history-content">
+                        <div class="history-title">Package picked up</div>
+                        <div class="history-location">123 Main St, New York, NY</div>
+                        <div class="history-time">Jan 12, 2025 - 10:30 AM</div>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-content">
+            <div class="footer-logo">
+                <div class="logo-icon">📦</div>
+                <span>SendIT</span>
+            </div>
+            <div class="footer-text">© 2025 SendIT. All rights reserved.</div>
+        </div>
+    </footer>
+
+    <script>
+        // Track form submission
+        document.querySelector('.track-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const trackingId = document.querySelector('.track-input').value;
+            
+            if (!trackingId) {
+                alert('Please enter a tracking ID');
+                return;
+            }
+            
+            // Simulate tracking lookup
+            console.log('Tracking parcel:', trackingId);
+            // In a real app, this would make an API call
+        });
+
+        // Simulate real-time updates
+        function updateTrackingInfo() {
+            const locationUpdate = document.querySelector('.location-update');
+            const now = new Date();
+            const timeAgo = Math.floor(Math.random() * 5) + 1;
+            locationUpdate.textContent = `Last updated: ${timeAgo} hours ago`;
+        }
+
+        // Update location every 30 seconds (for demo purposes)
+        setInterval(updateTrackingInfo, 30000);
+
+        // Add click handlers for navigation
+        document.querySelectorAll('.nav a').forEach(link => {
+            link.addEventListener('click', function(e) {
+                e.preventDefault();
+                document.querySelectorAll('.nav a').forEach(l => l.classList.remove('active'));
+                this.classList.add('active');
+            });
+        });
+
+        // Notification button click
+        document.querySelector('.notification-btn').addEventListener('click', function() {
+            alert('No new notifications');
+        });
+    </script>
+</body>
+</html>

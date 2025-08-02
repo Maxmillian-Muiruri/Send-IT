@@ -1,0 +1,273 @@
+<!-- Header -->
+<header>
+  <div class="container">
+    <div class="header-content">
+      <span class="logo">SendIT</span>
+      <div class="auth-buttons">
+        <nav class="nav-item">
+          <a
+            routerLink="/"
+            fragment="hero"
+            (click)="scrollToSection('hero', $event)"
+            style="
+              text-decoration: none;
+              background-color: white;
+              color: #141414;
+              padding: 0.5rem 1rem;
+              border-radius: 0.5rem;
+              margin-right: 1rem;
+              font-weight: 600;
+              font-size: 1.1rem;
+              cursor: pointer;
+            "
+            >Home</a
+          >
+          <a
+            routerLink="/"
+            fragment="about"
+            (click)="scrollToSection('about', $event)"
+            style="
+              text-decoration: none;
+              background-color: white;
+              color: #141414;
+              padding: 0.5rem 1rem;
+              border-radius: 0.5rem;
+              margin-right: 1rem;
+              font-weight: 600;
+              font-size: 1.1rem;
+              cursor: pointer;
+            "
+            >About</a
+          >
+          <a
+            routerLink="/"
+            fragment="footer"
+            (click)="scrollToSection('footer', $event)"
+            style="
+              text-decoration: none;
+              background-color: white;
+              color: #141414;
+              padding: 0.5rem 1rem;
+              border-radius: 0.5rem;
+              margin-right: 1rem;
+              font-weight: 600;
+              font-size: 1.1rem;
+              cursor: pointer;
+            "
+          >
+            Pricing</a
+          >
+          <ng-container *ngIf="userRole === 'USER'">
+            <a routerLink="/user/dashboard" class="dashboard-btn">Dashboard</a>
+            <a routerLink="/user/track" class="track-btn">Track</a>
+            <a routerLink="/user/history" class="history-btn">History</a>
+            <a routerLink="/user/profile" class="profile-btn">Profile</a>
+          </ng-container>
+        </nav>
+      </div>
+      <div class="header-icons-right">
+        <a
+          *ngIf="userRole === 'ADMIN'"
+          routerLink="/admin"
+          class="dashboard-btn"
+          >Admin Dashboard</a
+        >
+        <a
+          *ngIf="userRole === 'COURIER'"
+          routerLink="/courier"
+          class="dashboard-btn"
+          >Courier Dashboard</a
+        >
+        <a *ngIf="!userRole" routerLink="/auth/register" class="register-btn"
+          >Register</a
+        >
+        <a *ngIf="!userRole" routerLink="/auth/login" class="login-btn"
+          >Login</a
+        >
+        <a
+          *ngIf="userRole === 'USER'"
+          routerLink="/user/notifications"
+          class="notification-emoji"
+          title="Notifications"
+          >🔔</a
+        >
+        <a
+          *ngIf="userRole === 'USER'"
+          routerLink="/user/profile"
+          class="profile-emoji"
+          title="Profile"
+          >👤</a
+        >
+        <button *ngIf="userRole" class="logout-btn" (click)="logout()">
+          Logout
+        </button>
+      </div>
+    </div>
+  </div>
+</header>
+
+<!-- Hero Section -->
+<section class="hero" id="hero">
+  <div class="container">
+    <div class="hero-content">
+      <div class="hero-text">
+        <h1>Send Parcels Anywhere, Fast and Secure</h1>
+        <p>
+          Experience seamless parcel delivery with real-time tracking, easy
+          scheduling, and instant notifications. Your packages delivered with
+          care and precision.
+        </p>
+        <div class="hero-buttons">
+          <a routerLink="/auth/register" class="btn-primary">Get Started</a>
+          <a
+            href="#features"
+            class="btn-secondary"
+            (click)="scrollToFeatures($event)"
+            >Learn More</a
+          >
+        </div>
+      </div>
+      <div class="hero-image">
+        <img
+          src="https://unicrossblog.com/wp-content/uploads/2024/06/photo-of-a-delivery-person.jpg"
+          alt="hero-image"
+        />
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Features Section -->
+<section class="features" id="about">
+  <div class="container">
+    <div class="features-header">
+      <h2>Why Choose SendIT?</h2>
+      <p>
+        We provide the most reliable and efficient courier services with
+        cutting-edge technology
+      </p>
+    </div>
+    <div class="features-grid">
+      <div class="feature-card">
+        <div class="feature-icon">📍</div>
+        <h3>Real-time Tracking</h3>
+        <p>
+          Track your parcels in real-time with our advanced GPS tracking system.
+          Know exactly where your package is at every moment.
+        </p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">📅</div>
+        <h3>Easy Scheduling</h3>
+        <p>
+          Schedule pickups and deliveries with just a few clicks. Our flexible
+          scheduling system adapts to your busy lifestyle.
+        </p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">📧</div>
+        <h3>Email Updates</h3>
+        <p>
+          Stay informed with instant email notifications about pickup
+          confirmations, delivery updates, and package status changes.
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Pricing Section -->
+<section class="pricing-section" id="pricing">
+  <div class="container">
+    <h2 class="pricing-title">Pricing</h2>
+    <div class="pricing-cards">
+      <div class="pricing-card">
+        <h3>Basic</h3>
+        <div class="price">$5<span>/parcel</span></div>
+        <ul>
+          <li>Up to 2kg</li>
+          <li>Standard delivery</li>
+          <li>Email notifications</li>
+          <li>Basic support</li>
+        </ul>
+        <button class="pricing-btn">Choose Basic</button>
+      </div>
+      <div class="pricing-card popular">
+        <h3>Standard</h3>
+        <div class="price">$10<span>/parcel</span></div>
+        <ul>
+          <li>Up to 10kg</li>
+          <li>Express delivery</li>
+          <li>Email & SMS notifications</li>
+          <li>Priority support</li>
+        </ul>
+        <button class="pricing-btn">Choose Standard</button>
+      </div>
+      <div class="pricing-card">
+        <h3>Premium</h3>
+        <div class="price">$20<span>/parcel</span></div>
+        <ul>
+          <li>Up to 30kg</li>
+          <li>Same-day delivery</li>
+          <li>All notifications</li>
+          <li>24/7 support</li>
+        </ul>
+        <button class="pricing-btn">Choose Premium</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA Section -->
+<section class="cta">
+  <div class="container">
+    <h2>Ready to Send Your First Package?</h2>
+    <p>
+      Join thousands of satisfied customers who trust SendIT for their delivery
+      needs
+    </p>
+    <a routerLink="/auth/register" class="btn-primary">Start Shipping Now</a>
+  </div>
+</section>
+
+<!-- Footer -->
+<footer id="footer">
+  <div class="container">
+    <div class="footer-content">
+      <div class="footer-section">
+        <h3>SendIT</h3>
+        <p>
+          Fast, secure, and reliable courier services for all your delivery
+          needs.
+        </p>
+      </div>
+      <div class="footer-section">
+        <h3>Company</h3>
+        <ul>
+          <li><a href="#">About</a></li>
+          <li><a href="#">Careers</a></li>
+          <li><a href="#">Press</a></li>
+        </ul>
+      </div>
+      <div class="footer-section">
+        <h3>Support</h3>
+        <ul>
+          <li><a href="#">Contact</a></li>
+          <li><a href="#">Help Center</a></li>
+          <li><a href="#">FAQ</a></li>
+        </ul>
+      </div>
+      <div class="footer-section">
+        <h3>Legal</h3>
+        <ul>
+          <li><a href="#">Terms</a></li>
+          <li><a href="#">Privacy</a></li>
+          <li><a href="#">Cookies</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p>&copy; 2025 SendIT. All rights reserved.</p>
+    </div>
+  </div>
+</footer>

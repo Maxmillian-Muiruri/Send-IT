@@ -1,0 +1,425 @@
+<div class="container">
+  <!-- Sidebar -->
+  <div class="sidebar">
+    <div class="sidebar-header">
+      <div class="sidebar-logo"></div>
+      <h2>SendIT Courier</h2>
+    </div>
+    <ul class="sidebar-menu">
+      <li>
+        <a
+          routerLink="/"
+          routerLinkActive="active"
+          [routerLinkActiveOptions]="{ exact: true }"
+          ><span class="icon icon-dashboard"></span> Home</a
+        >
+      </li>
+      <li>
+        <a href="#" (click)="scrollToParcels($event)"
+          ><span class="icon icon-parcels"></span> My Parcels</a
+        >
+      </li>
+      <li>
+        <a href="#" (click)="scrollToLocation($event)"
+          ><span class="icon icon-location"></span> Update Location</a
+        >
+      </li>
+      <li>
+        <a href="#" (click)="logout()"
+          ><span class="icon icon-logout"></span> Logout</a
+        >
+      </li>
+    </ul>
+  </div>
+  <!-- Main Content -->
+  <div class="main-content">
+    <div class="header">
+      <h1>Courier Dashboard</h1>
+      <div class="header-icons">
+        <div class="notification-icon" (click)="openNotificationsModal()">
+          <span class="header-icon">🔔</span>
+          <span *ngIf="unreadCount > 0" class="notification-badge"
+            >{{ unreadCount }}</span
+          >
+        </div>
+        <span class="header-icon">👤</span>
+      </div>
+    </div>
+    <div class="content">
+      <!-- Courier Profile Section -->
+      <div class="profile-section" *ngIf="courier">
+        <h2>Courier Profile</h2>
+        <div class="profile-info">
+          <div class="profile-item">
+            <strong>Name:</strong> {{ courier.user?.name || 'N/A' }}
+          </div>
+          <div class="profile-item">
+            <strong>Email:</strong> {{ courier.user?.email || 'N/A' }}
+          </div>
+          <div class="profile-item">
+            <strong>Phone:</strong> {{ courier.user?.phone || 'N/A' }}
+          </div>
+          <div class="profile-item">
+            <strong>Vehicle Type:</strong> {{ courier.vehicleType || 'N/A' }}
+          </div>
+          <div class="profile-item">
+            <strong>License Plate:</strong> {{ courier.licensePlate || 'N/A' }}
+          </div>
+          <div class="profile-item">
+            <strong>Status:</strong>
+            <select
+              [(ngModel)]="courier.status"
+              (change)="updateCourierStatus(courier.status)"
+              class="status-select"
+            >
+              <option value="AVAILABLE">Available</option>
+              <option value="BUSY">Busy</option>
+              <option value="OFFLINE">Offline</option>
+              <option value="ON_DELIVERY">On Delivery</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- Stats Section -->
+      <div class="stats-section" *ngIf="courierStats">
+        <h2>Performance Stats</h2>
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-title">Total Deliveries</div>
+            <div class="stat-value">
+              {{ courierStats.totalDeliveries || 0 }}
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-title">This Month</div>
+            <div class="stat-value">
+              {{ courierStats.monthlyDeliveries || 0 }}
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-title">Success Rate</div>
+            <div class="stat-value">{{ courierStats.successRate || 0 }}%</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-title">Average Rating</div>
+            <div class="stat-value">
+              {{ courierStats.averageRating || 0 }}/5
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Parcels Table -->
+      <div class="parcels-section" id="parcels-section">
+        <h2>My Assigned Parcels</h2>
+        <div class="table-container">
+          <div *ngIf="loading" class="loading-spinner">Loading parcels...</div>
+          <div *ngIf="error" class="error-message">{{ error }}</div>
+
+          <table *ngIf="!loading && !error && parcels.length > 0">
+            <thead>
+              <tr>
+                <th>Tracking Code</th>
+                <th>Sender</th>
+                <th>Receiver</th>
+                <th>Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let parcel of parcels">
+                <td>{{ parcel.trackingCode }}</td>
+                <td>{{ parcel.sender?.name || parcel.senderEmail }}</td>
+                <td>{{ parcel.receiver?.name || parcel.receiverEmail }}</td>
+                <td>
+                  <select
+                    class="status-select"
+                    [ngClass]="{
+                            'status-pending': parcel.status === 'PENDING',
+                            'status-picked-up': parcel.status === 'PICKED_UP',
+                            'status-transit': parcel.status === 'IN_TRANSIT',
+                            'status-out-delivery': parcel.status === 'OUT_FOR_DELIVERY',
+                            'status-delivered': parcel.status === 'DELIVERED'
+                          }"
+                    [(ngModel)]="parcel.status"
+                  >
+                    <option value="PENDING">Pending</option>
+                    <option value="PICKED_UP">Picked Up</option>
+                    <option value="IN_TRANSIT">In Transit</option>
+                    <option value="OUT_FOR_DELIVERY">Out for Delivery</option>
+                    <option value="DELIVERED">Delivered</option>
+                  </select>
+                </td>
+                <td>
+                  <button
+                    class="update-btn"
+                    (click)="updateParcelStatus(parcel, parcel.status)"
+                  >
+                    Update
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+          <div
+            *ngIf="!loading && !error && parcels.length === 0"
+            class="no-parcels"
+          >
+            No parcels assigned to you at the moment.
+          </div>
+        </div>
+      </div>
+      <!-- Location Section -->
+      <div class="location-section" id="location-section">
+        <div class="location-info">
+          <div class="location-title">Current Location</div>
+          <div class="location-text">{{ location }}</div>
+          <div class="location-buttons">
+            <button
+              class="location-update-btn"
+              type="button"
+              (click)="updateLocation()"
+            >
+              📍 Get GPS Location
+            </button>
+            <button
+              class="location-manual-btn"
+              type="button"
+              (click)="openManualLocationModal()"
+            >
+              📝 Manual Location
+            </button>
+          </div>
+          <div class="location-help">
+            <small
+              >If GPS location is inaccurate, use manual location to set your
+              exact position.</small
+            >
+          </div>
+        </div>
+        <div class="location-map-wrapper">
+          <app-map [pickupCoords]="courierCoords"></app-map>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Notifications Modal -->
+<div
+  *ngIf="showNotificationsModal"
+  class="inline-modal-overlay"
+  (click)="closeNotificationsModal()"
+>
+  <div
+    class="inline-modal-content notifications-modal"
+    (click)="$event.stopPropagation()"
+  >
+    <div class="inline-modal-header">
+      <h3>Notifications</h3>
+      <div class="notification-actions">
+        <button
+          *ngIf="unreadCount > 0"
+          class="btn-secondary btn-small"
+          (click)="markAllNotificationsAsRead()"
+        >
+          Mark All Read
+        </button>
+        <button class="inline-modal-close" (click)="closeNotificationsModal()">
+          ×
+        </button>
+      </div>
+    </div>
+
+    <div class="notifications-content">
+      <div *ngIf="notificationsLoading" class="loading-spinner">
+        Loading notifications...
+      </div>
+
+      <div
+        *ngIf="!notificationsLoading && notifications.length === 0"
+        class="no-notifications"
+      >
+        <p>No notifications yet</p>
+      </div>
+
+      <div
+        *ngIf="!notificationsLoading && notifications.length > 0"
+        class="notifications-list"
+      >
+        <div
+          *ngFor="let notification of notifications"
+          class="notification-item"
+          [class.unread]="!notification.read"
+        >
+          <div class="notification-content">
+            <div class="notification-header">
+              <h4 class="notification-title">{{ notification.title }}</h4>
+              <span class="notification-time"
+                >{{ notification.createdAt | date:'short' }}</span
+              >
+            </div>
+            <p class="notification-message">{{ notification.message }}</p>
+            <div class="notification-type">{{ notification.type }}</div>
+          </div>
+          <div class="notification-actions">
+            <button
+              *ngIf="!notification.read"
+              class="btn-primary btn-small"
+              (click)="markNotificationAsRead(notification.id)"
+            >
+              Mark Read
+            </button>
+            <button
+              class="btn-secondary btn-small"
+              (click)="deleteNotification(notification.id)"
+            >
+              Delete
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Add Parcel Button (for demonstration, couriers may only update status/location in real apps) -->
+<button (click)="openAddParcelModal()">Add Parcel</button>
+
+<!-- Add Parcel Modal -->
+<app-modal
+  *ngIf="showAddParcelModal"
+  [visible]="true"
+  (closed)="showAddParcelModal = false"
+>
+  <form (ngSubmit)="createParcel()">
+    <input
+      [(ngModel)]="newParcel.sender"
+      name="sender"
+      placeholder="Sender"
+      required
+    />
+    <input
+      [(ngModel)]="newParcel.receiver"
+      name="receiver"
+      placeholder="Receiver"
+      required
+    />
+    <button type="submit">Add</button>
+  </form>
+</app-modal>
+
+<!-- Edit Parcel Modal -->
+<app-modal
+  *ngIf="showEditParcelModal"
+  [visible]="true"
+  (closed)="showEditParcelModal = false"
+>
+  <form *ngIf="selectedParcel" (ngSubmit)="updateParcel()">
+    <input
+      [(ngModel)]="selectedParcel.sender"
+      name="sender"
+      placeholder="Sender"
+      required
+    />
+    <input
+      [(ngModel)]="selectedParcel.receiver"
+      name="receiver"
+      placeholder="Receiver"
+      required
+    />
+    <select [(ngModel)]="selectedParcel.status" name="status">
+      <option value="Pending">Pending</option>
+      <option value="In Transit">In Transit</option>
+      <option value="Delivered">Delivered</option>
+    </select>
+    <button type="submit">Update</button>
+  </form>
+</app-modal>
+
+<!-- Inline Location Modal Overlay -->
+<div
+  *ngIf="showUpdateLocationModal"
+  class="inline-modal-overlay"
+  (click)="showUpdateLocationModal = false"
+>
+  <div class="inline-modal-content" (click)="$event.stopPropagation()">
+    <div class="inline-modal-header">
+      <h3>Set Manual Location</h3>
+      <button
+        class="inline-modal-close"
+        (click)="showUpdateLocationModal = false"
+      >
+        ×
+      </button>
+    </div>
+
+    <form (ngSubmit)="searchAndSetManualLocation()">
+      <!-- Option 1: Search by place name -->
+      <div class="form-group">
+        <label>Search by Place/Address Name:</label>
+        <input
+          [(ngModel)]="manualLocationName"
+          name="manualLocationName"
+          placeholder="e.g., Chuka, Kenya or Moi Avenue, Nairobi"
+          type="text"
+          autocomplete="off"
+        />
+      </div>
+
+      <!-- Option 2: Manual coordinates -->
+      <div class="form-group">
+        <label>Or enter coordinates manually:</label>
+        <div class="coordinates-input">
+          <input
+            [(ngModel)]="manualLat"
+            name="manualLat"
+            placeholder="Latitude (e.g., -0.3333)"
+            type="number"
+            step="any"
+          />
+          <input
+            [(ngModel)]="manualLng"
+            name="manualLng"
+            placeholder="Longitude (e.g., 37.6500)"
+            type="number"
+            step="any"
+          />
+        </div>
+      </div>
+
+      <div *ngIf="manualLocationError" class="manual-location-error">
+        {{ manualLocationError }}
+      </div>
+      <div *ngIf="manualLocationLoading" class="manual-location-loading">
+        Searching...
+      </div>
+
+      <div class="form-actions">
+        <button
+          type="submit"
+          class="btn-primary"
+          [disabled]="manualLocationLoading"
+        >
+          Search & Set Location
+        </button>
+        <button
+          type="button"
+          class="btn-primary"
+          (click)="setManualCoordinates()"
+          [disabled]="manualLocationLoading || !manualLat || !manualLng"
+        >
+          Set Coordinates
+        </button>
+        <button
+          type="button"
+          class="btn-secondary"
+          (click)="showUpdateLocationModal = false"
+        >
+          Cancel
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

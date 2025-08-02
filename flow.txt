@@ -1,0 +1,505 @@
+Project setup & folder structure
+Auth module (login, register, guards)
+User module (dashboard, send parcel, tracking, notification center)
+Admin module (dashboard, manage parcels, assign courier)
+Courier module (dashboard, update location/status)
+Shared module (dynamic message, pipes, directives)
+State management (ngRx) and dummy data services
+Google Maps integration
+Search, pagination, and UI polish
+Why Add Geocoding?
+
+
+Summary Table
+Step	What to Do	Example File(s)
+1	Define interfaces/models	shared/models/parcel.model.ts
+2	Create services with mock data	shared/services/parcel.service.ts
+3	Use services in components	admin-dashboard.ts, etc.
+4	Implement modals for all CRUD operations	modal.component.ts, etc.
+5	Filter data by role in components	courier-dashboard.ts, etc.
+6	Simulate all flows (admin, courier, user)	All dashboard components
+7	Add UI feedback (loading, errors)	All components
+8	(Optional) Add state management (ngRx)	state/
+9	Swap mock for real API when backend is ready	Update service methods
+
+
+
+backend folder structure and 
+the flow 
+sendit-backend/
+├── src/
+│   ├── auth/                                   # Authentication logic (login, register, JWT)
+│   │   ├── auth.controller.ts                  # Handles HTTP requests for authentication (login, register)
+│   │   ├── auth.module.ts                      # NestJS module definition for auth
+│   │   ├── auth.service.ts                     # Business logic for authentication (validate user, issue tokens)
+│   │   ├── strategies/
+│   │   │   └── jwt.strategy.ts                 # JWT strategy for validating tokens
+│   │   └── dto/
+│   │       ├── login.dto.ts                    # Data Transfer Object for login validation
+│   │       └── register.dto.ts                 # Data Transfer Object for registration validation
+│   │
+│   ├── users/                                  # User management (CRUD, profile, roles)
+│   │   ├── users.controller.ts                 # Handles HTTP requests for user operations
+│   │   ├── users.module.ts                     # NestJS module definition for users
+│   │   ├── users.service.ts                    # Business logic for user operations
+│   │   └── dto/
+│   │       ├── create-user.dto.ts              # DTO for creating a user
+│   │       ├── update-user.dto.ts              # DTO for updating user info
+│   │       └── user-response.dto.ts            # DTO for formatting user responses
+│   │
+│   ├── parcels/                                # Parcel management (CRUD, status, assignment)
+│   │   ├── parcels.controller.ts               # Handles HTTP requests for parcel operations
+│   │   ├── parcels.module.ts                   # NestJS module definition for parcels
+│   │   ├── parcels.service.ts                  # Business logic for parcel operations
+│   │   ├── dto/
+│   │   │   ├── create-parcel.dto.ts            # DTO for creating a parcel
+│   │   │   ├── update-parcel.dto.ts            # DTO for updating parcel info
+│   │   │   ├── update-status.dto.ts            # DTO for updating parcel status
+│   │   │   └── assign-courier.dto.ts           # DTO for assigning a courier to a parcel
+│   │   └── entities/
+│   │       └── parcel.entity.ts                # (Optional) Entity class for parcel (if needed for serialization)
+│   │
+│   ├── couriers/                               # Courier management (CRUD, location updates)
+│   │   ├── couriers.controller.ts              # Handles HTTP requests for courier operations
+│   │   ├── couriers.module.ts                  # NestJS module definition for couriers
+│   │   ├── couriers.service.ts                 # Business logic for courier operations
+│   │   └── dto/
+│   │       ├── create-courier.dto.ts           # DTO for creating a courier
+│   │       ├── update-courier.dto.ts           # DTO for updating courier info
+│   │       └── location-update.dto.ts          # DTO for updating courier location
+│   │
+│   ├── notifications/                          # Email/SMS notifications
+│   │   ├── email.service.ts                    # Service for sending emails
+│   │   ├── sms.service.ts                      # Service for sending SMS messages
+│   │   ├── notifications.module.ts             # NestJS module definition for notifications
+│   │   └── dto/
+│   │       └── notification.dto.ts             # DTO for notification requests
+│   │   └── templates/
+│   │       ├── welcome.hbs                     # Handlebars template for welcome email
+│   │       └── status-update.hbs               # Handlebars template for status update email
+│   │
+│   ├── common/                                 # Shared utilities (guards, decorators, filters, pipes)
+│   │   ├── guards/
+│   │   │   ├── jwt-auth.guard.ts               # Guard for protecting routes with JWT
+│   │   │   └── roles.guard.ts                  # Guard for role-based access control
+│   │   ├── decorators/
+│   │   │   ├── roles.decorator.ts              # Custom decorator for specifying roles
+│   │   │   └── user.decorator.ts               # Custom decorator for extracting user from request
+│   │   ├── filters/
+│   │   │   └── http-exception.filter.ts        # Global HTTP exception filter
+│   │   └── pipes/
+│   │       └── validation.pipe.ts              # Global validation pipe for DTOs
+│   │
+│   ├── prisma/                                 # Prisma ORM integration
+│   │   ├── prisma.service.ts                   # Service for interacting with Prisma client
+│   │   └── prisma.module.ts                    # NestJS module definition for Prisma
+│   │
+│   ├── config/                                 # Application configuration files
+│   │   ├── app.config.ts                       # General app configuration
+│   │   ├── jwt.config.ts                       # JWT configuration
+│   │   └── mail.config.ts                      # Mail service configuration
+│   │
+│   └── test/                                   # Test files (unit, integration, e2e)
+│       └── ... (test files)
+│
+├── prisma/
+│   └── schema.prisma                           # Prisma schema (database models and relations)
+│
+├── .env                                        # Environment variables
+├── .env.example                                # Example environment variables file
+├── tsconfig.json                               # TypeScript configuration
+├── package.json                                # Project dependencies and scripts
+└── README.md                                   # Project documentation 
+
+
+
+
+Absolutely! Here’s a **step-by-step plan** to build your SendIT backend from start to finish, following the folder structure and best practices for a NestJS + Prisma + PostgreSQL project.
+
+---
+
+# **SendIT Backend Development Plan**
+
+---
+
+## **1. Project Initialization**
+
+- **a.** Create the project folder: `sendit-backend/`
+- **b.** Initialize a new NestJS project:  
+  `nest new sendit-backend`
+- **c.** Install dependencies:  
+  - Prisma: `npm install @prisma/client`
+  - Prisma CLI (dev): `npm install -D prisma`
+  - Validation: `npm install class-validator class-transformer`
+  - JWT Auth: `npm install @nestjs/jwt passport-jwt @nestjs/passport passport bcrypt`
+  - Email: `npm install nodemailer`
+  - SMS (optional): `npm install twilio` (or your preferred SMS provider)
+  - Config: `npm install @nestjs/config`
+- **d.** Initialize Prisma:  
+  `npx prisma init`
+- **e.** Set up `.env` and `prisma/schema.prisma`
+
+---
+
+## **2. Database Modeling (Prisma)**
+
+- **a.** Design your `schema.prisma` with models for User, Parcel, Courier, etc.
+- **b.** Run `npx prisma migrate dev --name init` to create the database and generate Prisma Client.
+
+---
+
+## **3. Core Module Setup**
+
+- **a.** Create modules: `auth`, `users`, `parcels`, `couriers`, `notifications`, `common`, `prisma`, `config`
+- **b.** Scaffold controllers, services, DTOs, and entities as per your folder structure.
+
+---
+
+## **4. Authentication Module**
+
+- **a.** Implement registration and login endpoints.
+- **b.** Use bcrypt for password hashing.
+- **c.** Use JWT for authentication, with guards and strategies.
+- **d.** Add DTOs for login and registration.
+- **e.** Add role-based access control (user, admin, courier).
+
+---
+
+## **5. User Module**
+
+- **a.** Implement CRUD for users (create, read, update, soft delete).
+- **b.** Add DTOs for user creation, update, and response.
+- **c.** Add guards/decorators for role-based access.
+
+---
+
+## **6. Parcel Module**
+
+- **a.** Implement CRUD for parcels.
+- **b.** Add endpoints for status updates and assignment to couriers.
+- **c.** Add DTOs for parcel creation, update, status update, and assignment.
+- **d.** Implement search and pagination for parcel lists.
+
+---
+
+## **7. Courier Module**
+
+- **a.** Implement CRUD for couriers.
+- **b.** Add endpoints for updating courier location and status.
+- **c.** Add DTOs for courier creation, update, and location update.
+
+---
+
+## **8. Notifications Module**
+
+- **a.** Implement email service (welcome, status updates).
+- **b.** Implement SMS service (optional).
+- **c.** Use background jobs for sending notifications (can use BullMQ or simple async for now).
+- **d.** Add email templates (Handlebars or EJS).
+
+---
+
+## **9. Common Module**
+
+- **a.** Implement guards (JWT, roles).
+- **b.** Implement custom decorators (roles, user extraction).
+- **c.** Implement global exception filters and validation pipes.
+
+---
+
+## **10. Config Module**
+
+- **a.** Centralize configuration for JWT, mail, and app settings using `@nestjs/config`.
+
+---
+
+## **11. Prisma Module**
+
+- **a.** Create a Prisma service and module for database access.
+- **b.** Use Prisma Client in your services.
+
+---
+
+## **12. Testing**
+
+- **a.** Write unit and integration tests for all modules.
+- **b.** Use Jest (default with NestJS).
+
+---
+
+## **13. Documentation**
+
+- **a.** Document your API endpoints (Swagger or Postman).
+- **b.** Update your README with setup, usage, and environment variables.
+
+---
+
+## **14. Final Steps**
+
+- **a.** Test the full backend with your Angular frontend (replace mock data with real API calls).
+- **b.** Deploy your backend (Heroku, Render, DigitalOcean, etc.).
+- **c.** Monitor and maintain.
+
+---
+
+# **Summary Table**
+
+| Step | Task                                      | Tools/Notes                |
+|------|-------------------------------------------|----------------------------|
+| 1    | Project setup & dependencies              | NestJS, Prisma, JWT, etc.  |
+| 2    | Database modeling                         | Prisma                     |
+| 3    | Scaffold modules/folders                  | Nest CLI                   |
+| 4    | Auth (JWT, bcrypt, guards, DTOs)          | @nestjs/jwt, bcrypt        |
+| 5    | User CRUD, roles, soft delete             | Prisma, DTOs, guards       |
+| 6    | Parcel CRUD, status, assignment           | Prisma, DTOs, search       |
+| 7    | Courier CRUD, location/status             | Prisma, DTOs               |
+| 8    | Notifications (email/SMS, templates)      | Nodemailer, templates      |
+| 9    | Common (guards, decorators, filters)      | NestJS                     |
+| 10   | Config management                         | @nestjs/config             |
+| 11   | Prisma service/module                     | Prisma                     |
+| 12   | Testing                                   | Jest                       |
+| 13   | Documentation                             | Swagger/Postman, README    |
+| 14   | Integration, deployment                   | Angular, cloud provider    |
+
+
+Implement role-based guards and decorators for you?
+
+FIST explain what you have  done like in the courier the updating location likeallyou have done in the courrier 
+
+
+
+
+also for courrier shuld reeceive adiffrent emailm from the user he should receive a email saying like a parcel  of user {user email}has been assigned to you  like destination of parcel the total cost and estimated time of ensuring the parcel has arrived 
+
+integration
+
+Absolutely! Here’s a **step-by-step integration plan** to connect your Angular frontend to your NestJS backend, starting with authentication and moving through all core modules.
+
+---
+
+# 📝 **Frontend-Backend Integration Plan**
+
+---
+
+## **1. Authentication Integration**
+- **a.** Update the login/register forms to call backend `/auth/login` and `/auth/register` endpoints.
+- **b.** Store the JWT token in `localStorage` or a dedicated AuthService.
+- **c.** Update the AuthInterceptor to attach the JWT token to all outgoing HTTP requests.
+- **d.** Update AuthGuard to check for a valid JWT and redirect to login if missing/expired.
+- **e.** Update logout to clear the token and user info.
+
+---
+
+## **2. User Module Integration**
+- **a.** Replace mock user data/services with real HTTP calls to backend `/user` endpoints.
+- **b.** Fetch and display user profile and allow profile updates.
+- **c.** Implement password reset flow using backend endpoints.
+- **d.** Use role from JWT to control access to admin/courier/user dashboards.
+
+---
+
+## **3. Parcel Module Integration**
+- **a.** Replace mock parcel data/services with real HTTP calls to backend `/parcel` endpoints.
+- **b.** Implement create, update, delete, and status update flows.
+- **c.** Fetch and display sent/received parcels for users.
+- **d.** Fetch and display assigned parcels for couriers.
+- **e.** Implement parcel search, filter, and pagination using backend support.
+
+---
+
+## **4. Courier Module Integration**
+- **a.** Replace mock courier data/services with real HTTP calls to backend `/courier` endpoints.
+- **b.** Implement courier location updates (with reverse geocoding).
+- **c.** Fetch and display courier analytics, stats, and assigned parcels.
+- **d.** Allow admin to manage couriers.
+
+---
+
+## **5. Address & Geocoding Integration**
+- **a.** Use backend `/address` endpoints for address CRUD and geocoding.
+- **b.** Use backend for distance calculation and pricing estimation.
+
+---
+
+## **6. Notification Integration**
+- **a.** Fetch notifications from backend `/notifications` endpoint.
+- **b.** Mark notifications as read/unread, delete, etc.
+- **c.** Display notification count and details in the UI.
+
+---
+
+## **7. Real-Time (WebSocket) Integration**
+- **a.** Connect to backend WebSocket for live parcel/courier updates.
+- **b.** Subscribe to location and status events for real-time tracking.
+- **c.** Update UI in real-time as events are received.
+
+---
+
+## **8. Error Handling & UX Polish**
+- **a.** Add global error handling for HTTP and WebSocket errors.
+- **b.** Show user-friendly error/success messages.
+- **c.** Handle loading states and empty data gracefully.
+
+---
+
+## **9. Final Testing & QA**
+- **a.** Test all flows end-to-end (auth, parcel, courier, notifications, etc.).
+- **b.** Test with different user roles (admin, courier, user).
+- **c.** Test on different devices and browsers.
+
+---
+
+# **Recommended Order**
+1. **Authentication**
+2. **User Module**
+3. **Parcel Module**
+4. **Courier Module**
+5. **Address/Geocoding**
+6. **Notifications**
+7. **Real-Time/WebSocket**
+8. **Error Handling & UX**
+9. **Final Testing**
+
+---
+
+
+
+
+import { Component, OnInit } from '@angular/core';
+import { ParcelService } from '../../core/services/parcel';
+import { Parcel } from '../../shared/models/parcel.model';
+import { ModalComponent } from '../../shared/components/modal/modal.component';
+import { FormsModule } from '@angular/forms';
+import { CommonModule } from '@angular/common';
+
+@Component({
+  selector: 'app-user-dashboard',
+  templateUrl: './dashboard.html',
+  styleUrls: ['./dashboard.css'],
+  standalone: true,
+  imports: [CommonModule, ModalComponent, FormsModule]
+})
+export class UserDashboardComponent implements OnInit {
+  parcels: Parcel[] = [];
+  userEmail: string | null = null;
+  error: string | null = null;
+  loading = false;
+  searchTerm: string = '';
+  activity: any[] = [];
+  filteredActivity: any[] = [];
+  stats = [
+    { title: 'Sent Parcels', number: 0, icon: 'sent-icon', change: 0 },
+    { title: 'Received Parcels', number: 0, icon: 'received-icon', change: 0 },
+    { title: 'In Transit', number: 0, icon: 'intransit-icon', change: 0 },
+    { title: 'Delivered', number: 0, icon: 'delivered-icon', change: 0 }
+  ];
+
+  constructor(private parcelService: ParcelService) {}
+
+  ngOnInit() {
+    const userStr = localStorage.getItem('sendit_user');
+    if (userStr) {
+      const user = JSON.parse(userStr);
+      console.log("🔍 Current user email:", this.userEmail);
+      this.userEmail = user.email;
+    }
+    this.loading = true;
+    this.error = null;
+    this.parcelService.getParcels().subscribe({
+      next: (parcels) => {
+        console.log("📦 All parcels fetched:", parcels);
+        console.log("📦 Number of parcels:", parcels.length);
+        
+        this.parcels = this.userEmail
+          ? parcels.filter(p => 
+              (p.senderEmail === this.userEmail || p.receiverEmail === this.userEmail) ||
+              (typeof p.sender === 'string' && p.sender === this.userEmail) ||
+              (typeof p.receiver === 'string' && p.receiver === this.userEmail)
+            )
+          : [];
+        // For demo: populate activity from parcels
+        this.activity = this.parcels.map(p => ({
+          trackingId: p.id,
+          recipient: typeof p.receiver === 'string' ? p.receiver : p.receiverEmail || 'Unknown',
+          status: p.status,
+          statusClass: p.status === 'DELIVERED' ? 'delivered' : (p.status === 'IN_TRANSIT' ? 'in-transit' : 'pending'),
+          date: p.updatedAt || p.createdAt || new Date()
+        }));
+        this.filteredActivity = [...this.activity];
+
+        // Calculate real statistics from fetched data
+        this.calculateStats();
+        this.loading = false;
+    const sentParcels = this.parcels.filter(p => p.sender?.email === this.userEmail);
+    
+    const receivedParcels = this.parcels.filter(p => p.receiver?.email === this.userEmail);
+  }
+
+
+  calculateStats() {
+    if (!this.userEmail) return;
+
+    const sentParcels = this.parcels.filter(p => 
+      p.senderEmail === this.userEmail || 
+      (typeof p.sender === "string" && p.sender === this.userEmail)
+    );
+    
+    const receivedParcels = this.parcels.filter(p => 
+      p.receiverEmail === this.userEmail || 
+      (typeof p.receiver === "string" && p.receiver === this.userEmail)
+    );
+
+    const inTransitParcels = this.parcels.filter(p => p.status === "IN_TRANSIT");
+    const deliveredParcels = this.parcels.filter(p => p.status === "DELIVERED");
+
+    // Update stats with real data
+    this.stats = [
+      { 
+        title: "Sent Parcels", 
+        number: sentParcels.length, 
+        icon: "sent-icon", 
+        change: 0 
+      },
+      { 
+        title: "Received Parcels", 
+        number: receivedParcels.length, 
+        icon: "received-icon", 
+        change: 0 
+      },
+      { 
+        title: "In Transit", 
+        number: inTransitParcels.length, 
+        icon: "intransit-icon", 
+        change: 0 
+      },
+      { 
+        title: "Delivered", 
+        number: deliveredParcels.length, 
+        icon: "delivered-icon", 
+        change: 0 
+      }
+    ];
+  }
+
+  filterActivity() {
+    this.filteredActivity = this.activity.filter(a =>
+      a.trackingId.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
+      a.recipient.toLowerCase().includes(this.searchTerm.toLowerCase())
+    );
+  }
+
+  viewParcel(activity: any) {
+    // Implement modal or navigation to parcel details
+    alert('View Parcel: ' + activity.trackingId);
+  }
+
+  trackParcel(activity: any) {
+    // Implement navigation to track parcel page
+    alert('Track Parcel: ' + activity.trackingId);
+  }
+
+  logout() {
+    localStorage.removeItem('sendit_user');
+    window.location.href = '/';
+  }
+} 
